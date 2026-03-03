@@ -1,0 +1,6 @@
+@seed_store_api_HostAddress = http://localhost:5199
+
+GET {{seed_store_api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
