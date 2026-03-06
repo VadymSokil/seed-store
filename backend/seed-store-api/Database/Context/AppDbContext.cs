@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using seed_store_api.Database.Configurations.Store.Modules.Catalog;
+using seed_store_api.Database.Entities.Store.Modules.Account;
 using seed_store_api.Database.Entities.Store.Modules.Catalog;
 using seed_store_api.Database.Entities.Store.Modules.Products;
 using seed_store_api.Database.Entities.Store.Modules.StoreInfo;
@@ -22,10 +23,15 @@ namespace seed_store_api.Database.Context
         public DbSet<FilterValueEntity> FilterValues { get; set; }
         public DbSet<ProductFeatureEntity> ProductFeatures { get; set; }
 
+        public DbSet<AccountEntity> Accounts { get; set; }
+        public DbSet<PasswordResetRequestEntity> PasswordResetRequests { get; set; }
+        public DbSet<PendingAccountEntity> PendingAccounts { get; set; }
+        public DbSet<RefreshTokenEntity> RefreshTokens { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.ApplyConfiguration(new CategoryConfiguration());
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         }
     }
 }

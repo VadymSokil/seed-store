@@ -14,8 +14,8 @@ namespace seed_store_api.Database.Configurations.Store.Modules.Products
             builder.HasKey(fv => fv.Id);
 
             builder.HasOne<CategoryEntity>().WithMany().HasForeignKey(fv => fv.CategoryId).OnDelete(DeleteBehavior.Restrict);
-            builder.HasOne<FeatureEntity>().WithMany().HasForeignKey(fv => fv.FeatureId).OnDelete(DeleteBehavior.Restrict);
-            builder.HasOne<FeatureHeaderEntity>().WithMany().HasForeignKey(fv => fv.HeaderId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
+            builder.HasOne(fv => fv.Feature).WithMany().HasForeignKey(fv => fv.FeatureId).OnDelete(DeleteBehavior.Restrict);
+            builder.HasOne(fv => fv.Header).WithMany().HasForeignKey(fv => fv.HeaderId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(fv => fv.Value).IsRequired().HasMaxLength(200);
             builder.Property(fv => fv.ValueSlug).IsRequired().HasMaxLength(400);

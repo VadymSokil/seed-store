@@ -13,8 +13,8 @@ namespace seed_store_api.Database.Configurations.Store.Modules.Products
             builder.HasKey(pf => pf.Id);
 
             builder.HasOne<ProductEntity>().WithMany().HasForeignKey(pf => pf.ProductId).OnDelete(DeleteBehavior.Cascade).IsRequired();
-            builder.HasOne<FeatureEntity>().WithMany().HasForeignKey(pf => pf.FeatureId).OnDelete(DeleteBehavior.Restrict);
-            builder.HasOne<FeatureHeaderEntity>().WithMany().HasForeignKey(pf => pf.HeaderId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
+            builder.HasOne(pf => pf.Feature).WithMany().HasForeignKey(pf => pf.FeatureId).OnDelete(DeleteBehavior.Restrict);
+            builder.HasOne(pf => pf.Header).WithMany().HasForeignKey(pf => pf.HeaderId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(pf => pf.Value).IsRequired().HasMaxLength(200);
             builder.Property(pf => pf.ValueSlug).IsRequired().HasMaxLength(400);

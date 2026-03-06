@@ -21,7 +21,7 @@ namespace seed_store_api.Database.Configurations.Store.Modules.Products
             builder.Property(p => p.Description).IsRequired();
             builder.Property(p => p.Price).IsRequired().HasColumnType("decimal(10,2)");
             builder.Property(p => p.HasDiscount).IsRequired().HasDefaultValue(false);
-            builder.Property(p => p.DiscountPrice).HasColumnType("decimal(10,2)").HasDefaultValue(0);
+            builder.Property(p => p.DiscountPrice).HasColumnType("decimal(10,2)").HasDefaultValue((decimal?)null);
             builder.Property(p => p.Quantity).HasDefaultValue(0);
             builder.Property(p => p.Rating).HasColumnType("decimal(3,2)").HasDefaultValue(0);
             builder.Property(p => p.ReviewCount).HasDefaultValue(0);
