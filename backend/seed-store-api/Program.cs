@@ -23,6 +23,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using seed_store_api.Store.Support.Cleanup.Services;
+using seed_store_api.Store.Modules.Account.Interfaces;
+using seed_store_api.Store.Modules.Account.Repositories;
+using seed_store_api.Store.Modules.Account.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +43,9 @@ builder.Services.AddScoped<IProductService, ProductService>();
 
 builder.Services.AddScoped<IAuthorizationRepository, AuthorizationRepository>();
 builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
+
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<IAccountService, AccountService>();
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IPasswordHashService, PasswordHashService>();

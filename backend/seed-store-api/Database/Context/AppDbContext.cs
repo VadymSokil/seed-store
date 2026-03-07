@@ -28,6 +28,8 @@ namespace seed_store_api.Database.Context
         public DbSet<PendingAccountEntity> PendingAccounts { get; set; }
         public DbSet<RefreshTokenEntity> RefreshTokens { get; set; }
 
+        public DbSet<EmailChangeRequestEntity> EmailChangeRequests { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

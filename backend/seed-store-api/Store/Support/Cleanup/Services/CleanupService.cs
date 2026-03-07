@@ -35,6 +35,10 @@ namespace seed_store_api.Store.Support.Cleanup.Services
                         .SetProperty(x => x.DiscountEndDate, (DateTime?)null),
                     stoppingToken);
 
+                await context.EmailChangeRequests
+                    .Where(e => e.ExpiresAt < DateTime.UtcNow)
+                    .ExecuteDeleteAsync(stoppingToken);
+
                 await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
             }
         }
