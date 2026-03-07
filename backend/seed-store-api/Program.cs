@@ -26,6 +26,9 @@ using seed_store_api.Store.Support.Cleanup.Services;
 using seed_store_api.Store.Modules.Account.Interfaces;
 using seed_store_api.Store.Modules.Account.Repositories;
 using seed_store_api.Store.Modules.Account.Services;
+using seed_store_api.Store.Modules.Reviews.Interfaces;
+using seed_store_api.Store.Modules.Reviews.Repositories;
+using seed_store_api.Store.Modules.Reviews.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +49,9 @@ builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
 
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IAccountService, AccountService>();
+
+builder.Services.AddScoped<IReviewsRepository, ReviewsRepository>();
+builder.Services.AddScoped<IReviewsService, ReviewsService>();
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IPasswordHashService, PasswordHashService>();

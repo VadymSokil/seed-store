@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using seed_store_api.Database.Configurations.Store.Modules.Catalog;
+using seed_store_api.Database.Configurations.Store.Modules.Reviews;
 using seed_store_api.Database.Entities.Store.Modules.Account;
 using seed_store_api.Database.Entities.Store.Modules.Catalog;
 using seed_store_api.Database.Entities.Store.Modules.Products;
+using seed_store_api.Database.Entities.Store.Modules.Reviews;
 using seed_store_api.Database.Entities.Store.Modules.StoreInfo;
 
 namespace seed_store_api.Database.Context
@@ -29,6 +31,9 @@ namespace seed_store_api.Database.Context
         public DbSet<RefreshTokenEntity> RefreshTokens { get; set; }
 
         public DbSet<EmailChangeRequestEntity> EmailChangeRequests { get; set; }
+
+        public DbSet<ReviewEntity> Reviews { get; set; }
+        public DbSet<ReviewReplyEntity> ReviewReplies { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
