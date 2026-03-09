@@ -6,5 +6,6 @@
         string GenerateRefreshToken();
         string GenerateSecureToken();
         string GenerateVerificationCode();
+        string GenerateOrderNumber();
     }
 }

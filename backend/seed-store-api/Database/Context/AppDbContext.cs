@@ -3,6 +3,7 @@ using seed_store_api.Database.Configurations.Store.Modules.Catalog;
 using seed_store_api.Database.Configurations.Store.Modules.Reviews;
 using seed_store_api.Database.Entities.Store.Modules.Account;
 using seed_store_api.Database.Entities.Store.Modules.Catalog;
+using seed_store_api.Database.Entities.Store.Modules.Orders;
 using seed_store_api.Database.Entities.Store.Modules.Products;
 using seed_store_api.Database.Entities.Store.Modules.Reviews;
 using seed_store_api.Database.Entities.Store.Modules.StoreInfo;
@@ -34,6 +35,11 @@ namespace seed_store_api.Database.Context
 
         public DbSet<ReviewEntity> Reviews { get; set; }
         public DbSet<ReviewReplyEntity> ReviewReplies { get; set; }
+
+        public DbSet<OrderEntity> Orders { get; set; }
+        public DbSet<OrderItemEntity> OrderItems { get; set; }
+        public DbSet<OrderStatusEntity> OrderStatuses { get; set; }
+        public DbSet<OrderTransactionEntity> OrderTransactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

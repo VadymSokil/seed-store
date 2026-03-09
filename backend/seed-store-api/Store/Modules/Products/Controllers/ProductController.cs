@@ -45,7 +45,7 @@ namespace seed_store_api.Store.Modules.Products.Controllers
         }
 
         [HttpGet("{idOrSlug}")]
-        public async Task<IActionResult> GetProductDetailsAsync([FromQuery] string idOrSlug)
+        public async Task<IActionResult> GetProductDetailsAsync([FromRoute] string idOrSlug)
         {
             var result = await _productService.GetProductDetailsAsync(idOrSlug);
             return Ok(result);

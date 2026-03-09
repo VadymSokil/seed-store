@@ -59,5 +59,12 @@ namespace seed_store_api.Store.Support.TokenGeneration.Services
         {
             return new Random().Next(100000, 999999).ToString();
         }
+
+        public string GenerateOrderNumber()
+        {
+            var datePart = DateTime.UtcNow.ToString("yyyyMMdd");
+            var randomPart = RandomNumberGenerator.GetInt32(1000, 9999);
+            return $"ORD-{datePart}-{randomPart}";
+        }
     }
 }

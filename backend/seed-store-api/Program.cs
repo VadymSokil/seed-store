@@ -29,6 +29,11 @@ using seed_store_api.Store.Modules.Account.Services;
 using seed_store_api.Store.Modules.Reviews.Interfaces;
 using seed_store_api.Store.Modules.Reviews.Repositories;
 using seed_store_api.Store.Modules.Reviews.Services;
+using seed_store_api.Store.Support.Payment.Interfaces;
+using seed_store_api.Store.Support.Payment.Services;
+using seed_store_api.Store.Modules.Orders.Repositories;
+using seed_store_api.Store.Modules.Orders.Interfaces;
+using seed_store_api.Store.Modules.Orders.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,9 +58,13 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IReviewsRepository, ReviewsRepository>();
 builder.Services.AddScoped<IReviewsService, ReviewsService>();
 
+builder.Services.AddScoped<IOrdersRepository, OrdersRepository>();
+builder.Services.AddScoped<IOrdersService, OrdersService>();
+
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IPasswordHashService, PasswordHashService>();
 builder.Services.AddScoped<ITokenGenerationService, TokenGenerationService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 builder.Services.AddHostedService<CleanupService>();
 
