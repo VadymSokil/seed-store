@@ -2,14 +2,11 @@
 
 namespace seed_store_api.Store.Modules.Account.Models
 {
-    public class ConfirmEmailChangeModel
+    public class ChangeEmailModel
     {
         [Required]
         [MaxLength(254)]
         [EmailAddress]
         public string NewEmail { get; set; } = string.Empty;
-
-        [Required]
-        public string Code { get; set; } = string.Empty;
     }
 }

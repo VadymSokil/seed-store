@@ -46,9 +46,9 @@ namespace seed_store_api.Store.Modules.Authorization.Controllers
         }
 
         [HttpPost("resend-verification-code")]
-        public async Task<IActionResult> ResendVerificationCode([FromBody] string email)
+        public async Task<IActionResult> ResendVerificationCode([FromBody] ResendVerificationCodeModel model)
         {
-            var result = await _authorizationService.ResendVerificationCodeAsync(email);
+            var result = await _authorizationService.ResendVerificationCodeAsync(model.Email);
 
             return result switch
             {
@@ -71,9 +71,9 @@ namespace seed_store_api.Store.Modules.Authorization.Controllers
         }
 
         [HttpPost("forgot-password")]
-        public async Task<IActionResult> ForgotPassword([FromBody] string email)
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModel model)
         {
-            var result = await _authorizationService.ForgotPasswordAsync(email);
+            var result = await _authorizationService.ForgotPasswordAsync(model.Email);
 
             return result switch
             {
@@ -110,9 +110,9 @@ namespace seed_store_api.Store.Modules.Authorization.Controllers
         }
 
         [HttpPost("resend-reset-code")]
-        public async Task<IActionResult> ResendResetCode([FromBody] string email)
+        public async Task<IActionResult> ResendResetCode([FromBody] ResendResetCodeModel model)
         {
-            var result = await _authorizationService.ResendResetCodeAsync(email);
+            var result = await _authorizationService.ResendResetCodeAsync(model.Email);
 
             return result switch
             {

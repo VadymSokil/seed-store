@@ -34,10 +34,16 @@ using seed_store_api.Store.Support.Payment.Services;
 using seed_store_api.Store.Modules.Orders.Repositories;
 using seed_store_api.Store.Modules.Orders.Interfaces;
 using seed_store_api.Store.Modules.Orders.Services;
+using seed_store_api.Store.Support.ExceptionHandling.Middlewares;
+using seed_store_api.Store.Support.Logging.Interfaces;
+using seed_store_api.Store.Support.Logging.Services;
+using seed_store_api.Store.Support.Logging.Models;
+using seed_store_api.Store.Support.Logging.Middlewares;
+using seed_store_api.Store.Support.Logging.Repositories;
+using seed_store_api.Store.Support.Swagger.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -65,6 +71,8 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IPasswordHashService, PasswordHashService>();
 builder.Services.AddScoped<ITokenGenerationService, TokenGenerationService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<ILoggingRepository, LoggingRepository>();
+builder.Services.AddScoped<ILoggingService, LoggingService>();
 
 builder.Services.AddHostedService<CleanupService>();
 
@@ -78,6 +86,15 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("store", new OpenApiInfo { Title = "Store API", Version = "v1" });
     c.SwaggerDoc("admin", new OpenApiInfo { Title = "Admin API", Version = "v1" });
+
+    c.AddSecurityDefinition("cookieAuth", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Cookie,
+        Name = "access_token"
+    });
+
+    c.OperationFilter<AuthorizeOperationFilter>();
 });
 
 builder.Services.AddCors(options =>
@@ -117,9 +134,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
+Console.WriteLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] APPLICATION STARTED");
+using (var scope = app.Services.CreateScope())
+{
+    var loggingService = scope.ServiceProvider.GetRequiredService<ILoggingService>();
+    await loggingService.LogAsync(new LoggingModel
+    {
+        Status = "ok",
+        Address = "system:start",
+        ExecutionTime = 0
+    });
+}
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<RequestLoggingMiddleware>();
+
+
 app.UseCors("AllowAll");
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -136,5 +170,19 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+lifetime.ApplicationStopping.Register(() =>
+{
+    using var scope = app.Services.CreateScope();
+    var loggingService = scope.ServiceProvider.GetRequiredService<ILoggingService>();
+    loggingService.LogAsync(new LoggingModel
+    {
+        Status = "ok",
+        Address = "system:stop",
+        ExecutionTime = 0
+    }).GetAwaiter().GetResult();
+    Console.WriteLine($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] APPLICATION STOPPED");
+});
 
 app.Run();

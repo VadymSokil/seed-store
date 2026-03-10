@@ -7,6 +7,7 @@ using seed_store_api.Database.Entities.Store.Modules.Orders;
 using seed_store_api.Database.Entities.Store.Modules.Products;
 using seed_store_api.Database.Entities.Store.Modules.Reviews;
 using seed_store_api.Database.Entities.Store.Modules.StoreInfo;
+using seed_store_api.Database.Entities.Store.Support.Logging;
 
 namespace seed_store_api.Database.Context
 {
@@ -40,6 +41,8 @@ namespace seed_store_api.Database.Context
         public DbSet<OrderItemEntity> OrderItems { get; set; }
         public DbSet<OrderStatusEntity> OrderStatuses { get; set; }
         public DbSet<OrderTransactionEntity> OrderTransactions { get; set; }
+
+        public DbSet<LoggingEntity> Logs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

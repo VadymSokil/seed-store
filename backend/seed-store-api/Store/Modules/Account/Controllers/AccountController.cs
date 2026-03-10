@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using seed_store_api.Store.Modules.Account.Interfaces;
 using seed_store_api.Store.Modules.Account.Models;
@@ -47,10 +46,10 @@ namespace seed_store_api.Store.Modules.Account.Controllers
         }
 
         [HttpPut("email")]
-        public async Task<IActionResult> ChangeEmail([FromBody] string newEmail)
+        public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailModel model)
         {
             var accountId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            var result = await _accountService.ChangeEmailAsync(accountId, newEmail);
+            var result = await _accountService.ChangeEmailAsync(accountId, model.NewEmail);
 
             return result switch
             {
@@ -77,10 +76,10 @@ namespace seed_store_api.Store.Modules.Account.Controllers
         }
 
         [HttpPut("phone")]
-        public async Task<IActionResult> ChangePhone([FromBody] string? phoneNumber)
+        public async Task<IActionResult> ChangePhone([FromBody] ChangePhoneModel model)
         {
             var accountId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            var result = await _accountService.ChangePhoneAsync(accountId, phoneNumber);
+            var result = await _accountService.ChangePhoneAsync(accountId, model?.PhoneNumber);
 
             return result switch
             {

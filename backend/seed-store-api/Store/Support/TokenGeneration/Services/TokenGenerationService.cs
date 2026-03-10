@@ -66,5 +66,9 @@ namespace seed_store_api.Store.Support.TokenGeneration.Services
             var randomPart = RandomNumberGenerator.GetInt32(1000, 9999);
             return $"ORD-{datePart}-{randomPart}";
         }
+        public Guid GenerateLogId()
+        {
+            return Guid.NewGuid();
+        }
     }
 }

@@ -7,5 +7,6 @@
         string GenerateSecureToken();
         string GenerateVerificationCode();
         string GenerateOrderNumber();
+        Guid GenerateLogId();
     }
 }
