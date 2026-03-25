@@ -1,0 +1,22 @@
+﻿using SeedStore.Database.Context;
+using SeedStore.Database.Entities.Support.Logging;
+using SeedStore.Support.General.Logging.Interfaces;
+
+namespace SeedStore.Support.General.Logging.Repositories
+{
+    public class LoggingRepository : ILoggingRepository
+    {
+        private readonly AppDbContext _context;
+
+        public LoggingRepository(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task AddLogAsync(LoggingEntity log)
+        {
+            await _context.Logs.AddAsync(log);
+            await _context.SaveChangesAsync();
+        }
+    }
+}

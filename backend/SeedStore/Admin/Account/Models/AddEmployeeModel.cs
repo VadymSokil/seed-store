@@ -1,0 +1,23 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace SeedStore.Admin.Account.Models
+{
+    public class AddEmployeeModel
+    {
+        [Required]
+        [MaxLength(100)]
+        public string Name { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(50)]
+        public string Login { get; set; } = string.Empty;
+
+        [Required]
+        [MinLength(8)]
+        [MaxLength(100)]
+        public string Password { get; set; } = string.Empty;
+
+        [Required]
+        public int RoleId { get; set; }
+    }
+}
