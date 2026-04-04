@@ -1,6 +1,7 @@
 import { useCompareStore } from '../../store/useCompareStore';
 import { X } from 'lucide-react';
 import { useModalScrollLock } from '../../hooks/useModalScrollLock';
+import { useNavigate } from 'react-router-dom';
 
 interface CompareModalProps {
   onClose: () => void;
@@ -8,8 +9,9 @@ interface CompareModalProps {
 
 const CompareModal = ({ onClose }: CompareModalProps) => {
   const { items, removeItem } = useCompareStore();
+  const navigate = useNavigate();
 
-  useModalScrollLock();
+  useModalScrollLock(true);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
@@ -27,7 +29,7 @@ const CompareModal = ({ onClose }: CompareModalProps) => {
             <div className="overflow-y-auto flex-1">
               {items.map(item => (
                 <div key={item.id} className="flex items-center gap-3 p-4 border-b border-gray-100">
-                  <img src={item.imageUrl} alt={item.name} className="w-14 h-14 object-cover rounded" />
+                  <img src={item.imageUrl} alt={item.name} className="w-14 h-14 object-contain rounded" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium line-clamp-2">{item.name}</p>
                     <p className="text-sm text-green-700 font-bold">{item.price} ₴</p>
@@ -39,7 +41,9 @@ const CompareModal = ({ onClose }: CompareModalProps) => {
               ))}
             </div>
             <div className="p-4 border-t border-gray-100">
-              <button className="w-full bg-orange-500 text-white py-2 rounded text-sm hover:bg-orange-400 transition-colors font-medium">
+              <button
+                  onClick={() => { navigate('/compare'); onClose(); }} 
+                  className="w-full bg-orange-500 text-white py-2 rounded text-sm hover:bg-orange-400 transition-colors font-medium">
                 Перейти до порівняння
               </button>
             </div>

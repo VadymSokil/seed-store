@@ -3,6 +3,7 @@ import { create } from 'zustand';
 interface FavoriteItem {
   id: number;
   name: string;
+  slug: string;
   imageUrl: string;
   price: number;
   inStock: boolean;
@@ -13,7 +14,10 @@ interface FavoritesStore {
   count: number;
   addItem: (product: FavoriteItem) => void;
   removeItem: (id: number) => void;
+  clearItems: () => void;
 }
+
+
 
 export const useFavoritesStore = create<FavoritesStore>((set) => ({
   items: [],
@@ -27,4 +31,5 @@ export const useFavoritesStore = create<FavoritesStore>((set) => ({
     items: state.items.filter(i => i.id !== id),
     count: state.count - 1
   })),
+  clearItems: () => set({ items: [], count: 0 }),
 }));

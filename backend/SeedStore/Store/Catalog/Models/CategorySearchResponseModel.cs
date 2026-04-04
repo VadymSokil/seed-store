@@ -2,6 +2,8 @@
 {
     public class CategorySearchResponseModel
     {
-        public string Name { get; set; } = string.Empty;
+        public string Name { get; set; }
+        public string Slug { get; set; }
+        public string Path { get; set; }
     }
 }

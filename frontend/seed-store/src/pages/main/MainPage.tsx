@@ -6,6 +6,7 @@ import { getTopProducts } from '../../api/productsApi';
 
 const mapProduct = (p: TopProduct) => ({
   id: p.id,
+  slug: p.slug,
   name: p.name,
   imageUrl: p.imageUrl,
   price: p.hasDiscount && p.discountPrice ? p.discountPrice : p.price,

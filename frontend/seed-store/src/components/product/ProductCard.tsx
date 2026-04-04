@@ -1,10 +1,12 @@
 import { Heart, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../../store/useCartStore';
 import { useFavoritesStore } from '../../store/useFavoritesStore';
 import { useCompareStore } from '../../store/useCompareStore';
 
 interface ProductCardProps {
   id: number;
+  slug: string;
   name: string;
   imageUrl: string;
   price: number;
@@ -14,7 +16,8 @@ interface ProductCardProps {
   inStock: boolean;
 }
 
-const ProductCard = ({ id, name, imageUrl, price, oldPrice, rating, reviewsCount, inStock }: ProductCardProps) => {
+const ProductCard = ({ id, slug, name, imageUrl, price, oldPrice, rating, reviewsCount, inStock }: ProductCardProps) => {
+  const navigate = useNavigate();
   const isInCart = useCartStore((state) => state.items.some(i => i.id === id));
   const isFavorite = useFavoritesStore((state) => state.items.some(i => i.id === id));
   const isCompared = useCompareStore((state) => state.items.some(i => i.id === id));
@@ -28,11 +31,14 @@ const ProductCard = ({ id, name, imageUrl, price, oldPrice, rating, reviewsCount
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md hover:-translate-y-1 transition-all duration-200">
-      <div className="relative">
-        <img src={imageUrl} alt={name} className="w-full h-48 object-cover scale-110 transition-transform duration-300" />
+      <div className="relative cursor-pointer" onClick={() => navigate(`/product/${slug}`)}>
+        <img src={imageUrl} alt={name} className="w-full h-64 object-contain transition-transform duration-300" />
         <div className="absolute top-2 right-2 flex flex-col gap-2">
           <button
-            onClick={() => isFavorite ? removeFromFavorites(id) : addToFavorites({ id, name, imageUrl, price, inStock })}
+            onClick={(e) => {
+              e.stopPropagation();
+              isFavorite ? removeFromFavorites(id) : addToFavorites({ id, name, slug, imageUrl, price, inStock });
+            }}
             className="bg-white p-1.5 rounded-full shadow transition-colors"
           >
             <Heart
@@ -48,7 +54,12 @@ const ProductCard = ({ id, name, imageUrl, price, oldPrice, rating, reviewsCount
       </div>
 
       <div className="p-3 flex flex-col gap-2">
-        <p className="text-sm font-medium line-clamp-2 min-h-10">{name}</p>
+        <p
+          className="text-sm font-medium line-clamp-2 min-h-10 cursor-pointer hover:text-green-700"
+          onClick={() => navigate(`/product/${slug}`)}
+        >
+          {name}
+        </p>
 
         <div className="flex items-center gap-1">
           <div className="flex">

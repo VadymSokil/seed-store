@@ -42,7 +42,9 @@ namespace SeedStore.Store.Catalog.Services
 
             return categories.Select(c => new CategorySearchResponseModel
             {
-                Name = c.Name
+                Name = c.Name,
+                Slug = c.Slug,
+                Path = c.Path
             }).ToList();
         }
     }

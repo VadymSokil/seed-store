@@ -4,6 +4,7 @@ import ProductCard from './ProductCard';
 
 interface Product {
   id: number;
+  slug: string;
   name: string;
   imageUrl: string;
   price: number;
@@ -19,7 +20,12 @@ interface ProductCarouselProps {
 }
 
 const ProductCarousel = ({ title, products }: ProductCarouselProps) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: 'start' });
+  const [emblaRef, emblaApi] = useEmblaCarousel({ 
+    loop: false, 
+    align: 'start', 
+    containScroll: 'keepSnaps',
+    dragFree: false
+  });
 
   const scrollPrev = () => emblaApi?.scrollPrev();
   const scrollNext = () => emblaApi?.scrollNext();
@@ -30,17 +36,17 @@ const ProductCarousel = ({ title, products }: ProductCarouselProps) => {
         <h2 className="text-xl font-bold text-gray-800">{title}</h2>
         <div className="flex gap-2">
           <button onClick={scrollPrev} className="p-1.5 rounded-full border border-gray-300 text-gray-400 hover:border-green-700 hover:text-green-700 active:border-green-700 active:text-green-700 transition-colors">
-  <ChevronLeft size={20} strokeWidth={2.5} />
-</button>
-<button onClick={scrollNext} className="p-1.5 rounded-full border border-gray-300 text-gray-400 hover:border-green-700 hover:text-green-700 active:border-green-700 active:text-green-700 transition-colors">
-  <ChevronRight size={20} strokeWidth={2.5} />
-</button>
+            <ChevronLeft size={20} strokeWidth={2.5} />
+          </button>
+          <button onClick={scrollNext} className="p-1.5 rounded-full border border-gray-300 text-gray-400 hover:border-green-700 hover:text-green-700 active:border-green-700 active:text-green-700 transition-colors">
+            <ChevronRight size={20} strokeWidth={2.5} />
+          </button>
         </div>
       </div>
-      <div className="overflow-hidden pt-2 -mt-2" ref={emblaRef}>
+      <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex gap-4">
           {products.map(product => (
-            <div key={product.id} className="flex-none w-52">
+            <div key={product.id} className="flex-none w-64 py-2">
               <ProductCard {...product} />
             </div>
           ))}

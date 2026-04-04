@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Menu, Tag, Scale, Heart, ShoppingCart, User, Search, Globe } from 'lucide-react';
 import CartModal from '../modals/CartModal';
 import CabinetModal from '../modals/CabinetModal';
@@ -20,6 +21,7 @@ const HeaderLower = () => {
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
 
   const { language, toggleLanguage } = useLanguage();
+  const navigate = useNavigate();
 
   const cartCount = useCartStore((state) => state.count);
   const favoritesCount = useFavoritesStore((state) => state.count);
@@ -53,7 +55,10 @@ const HeaderLower = () => {
       {/* Мобільна версія */}
       <div className="md:hidden px-4">
         <div className="grid grid-cols-8 gap-1">
-          <button className="relative flex justify-center items-center aspect-square border border-gray-300 text-gray-400 rounded hover:border-green-700 hover:text-green-700 transition-colors">
+          <button
+            onClick={() => navigate('/catalog')}
+            className="relative flex justify-center items-center aspect-square border border-gray-300 text-gray-400 rounded hover:border-green-700 hover:text-green-700 transition-colors"
+          >
             <Menu size={20} strokeWidth={2.5} />
           </button>
           <button className="relative flex justify-center items-center aspect-square border border-gray-300 text-gray-400 rounded hover:border-green-700 hover:text-green-700 transition-colors">
@@ -67,7 +72,7 @@ const HeaderLower = () => {
             <CounterBadge count={compareCount} />
           </button>
           <button
-            onClick={() => {}}
+            onClick={() => navigate('/favorites')}
             className="relative flex justify-center items-center aspect-square border border-gray-300 text-gray-400 rounded hover:border-green-700 hover:text-green-700 transition-colors"
           >
             <Heart size={20} strokeWidth={2.5} />
@@ -103,7 +108,10 @@ const HeaderLower = () => {
 
       {/* Десктопна версія */}
       <div className="hidden md:flex px-4 md:px-8 xl:px-8 2xl:px-32 items-center gap-3">
-        <button className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-green-700 active:bg-green-700 transition-colors">
+        <button
+          onClick={() => navigate('/catalog')}
+          className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2 hover:bg-green-700 active:bg-green-700 transition-colors"
+        >
           <Menu size={20} strokeWidth={2.5} />
           <span className="font-medium">Каталог</span>
         </button>
@@ -134,7 +142,7 @@ const HeaderLower = () => {
           <CounterBadge count={compareCount} />
         </button>
         <button
-          onClick={() => {}}
+          onClick={() => navigate('/favorites')}
           className="relative border border-gray-300 text-gray-400 px-[9px] py-[9px] rounded hover:border-green-700 hover:text-green-700 active:border-green-700 active:text-green-700 transition-colors"
         >
           <Heart size={20} strokeWidth={2.5} />

@@ -2,12 +2,15 @@ import api from './axiosInstance';
 
 export interface SearchProduct {
   name: string;
+  slug: string;
   price: number;
   imageUrl: string;
 }
 
 export interface SearchCategory {
   name: string;
+  slug: string;
+  path: string;
 }
 
 export const searchProducts = async (value: string): Promise<SearchProduct[]> => {

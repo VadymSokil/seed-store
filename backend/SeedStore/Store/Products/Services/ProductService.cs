@@ -22,6 +22,7 @@ namespace SeedStore.Store.Products.Services
             return products.Select(c => new ProductSearchResponseModel
             {
                 Name = c.Name,
+                Slug = c.Slug,
                 Price = c.Price,
                 ImageUrl = c.ImageUrl,
             }).ToList();
@@ -42,7 +43,7 @@ namespace SeedStore.Store.Products.Services
             return await _productRepository.GetCategoryFiltersAsync(id);
         }
 
-        public async Task<List<ProductCardModel>> GetProductsListAsync(ProductListRequestModel request)
+        public async Task<ProductListResponseModel> GetProductsListAsync(ProductListRequestModel request)
         {
             return await _productRepository.GetProductsListAsync(request);
         }

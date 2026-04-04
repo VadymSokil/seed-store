@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Search, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { searchProducts, searchCategories } from '../../api/searchApi';
 import type { SearchProduct, SearchCategory } from '../../api/searchApi';
 import { useModalScrollLock } from '../../hooks/useModalScrollLock';
@@ -11,6 +12,7 @@ interface SearchModalProps {
 }
 
 const SearchModal = ({ onClose, anchorRef }: SearchModalProps) => {
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [products, setProducts] = useState<SearchProduct[]>([]);
   const [categories, setCategories] = useState<SearchCategory[]>([]);
@@ -19,7 +21,7 @@ const SearchModal = ({ onClose, anchorRef }: SearchModalProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  useModalScrollLock(scrollRef);
+  useModalScrollLock(true);
 
   const isDesktop = !!position;
 
@@ -51,15 +53,30 @@ const SearchModal = ({ onClose, anchorRef }: SearchModalProps) => {
 
   const total = products.length + categories.length;
 
+  const handleCategoryClick = (slug: string) => {
+    navigate(`/category/${slug}`);
+    onClose();
+  };
+
+  const handleProductClick = (slug: string) => {
+    navigate(`/product/${slug}`);
+    onClose();
+  };
+
+  const handleShowAll = () => {
+    navigate(`/search?q=${encodeURIComponent(query)}`);
+    onClose();
+  };
+
   const resultsList = (
     <div ref={scrollRef} className={`overflow-y-auto ${isDesktop ? 'max-h-72' : 'flex-1'}`}>
       {categories.map((cat, i) => (
-        <div key={i} className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm text-gray-700 border-b border-gray-100">
+        <div key={i} onClick={() => handleCategoryClick(cat.path)} className="px-4 py-3 hover:bg-gray-50 cursor-pointer text-sm text-gray-700 border-b border-gray-100">
           {cat.name}
         </div>
       ))}
       {products.map((product, i) => (
-        <div key={i} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100">
+        <div key={i} onClick={() => handleProductClick(product.slug)} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100">
           <img src={product.imageUrl} alt={product.name} className="w-12 h-12 object-cover rounded" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium line-clamp-1">{product.name}</p>
@@ -82,7 +99,10 @@ const SearchModal = ({ onClose, anchorRef }: SearchModalProps) => {
       {!loading && query && resultsList}
       {query && !loading && (
         <div className="p-3 border-t border-gray-100">
-          <button className="w-full bg-green-600 text-white py-2 rounded text-sm hover:bg-green-700 transition-colors">
+          <button
+            onClick={handleShowAll}
+            className="w-full bg-green-600 text-white py-2 rounded text-sm hover:bg-green-700 transition-colors"
+          >
             Показати всі результати
           </button>
         </div>

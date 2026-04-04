@@ -23,6 +23,7 @@ namespace SeedStore.Store.Products.Repositories
                 .Select(p => new ProductSearchResponseModel
                 {
                     Name = p.Name,
+                    Slug = p.Slug,
                     Price = p.Price,
                     ImageUrl = _context.ProductImages.Where(pi => pi.ProductId == p.Id).OrderBy(pi => pi.ViewOrder).Select(pi => pi.Url).FirstOrDefault()
                 })
@@ -33,18 +34,15 @@ namespace SeedStore.Store.Products.Repositories
         {
             var now = DateTime.UtcNow;
 
-            var newestTask = await _context.Products
+            var newest = await _context.Products
                 .Where(p => p.IsActive)
                 .OrderByDescending(p => p.CreatedDate)
                 .Take(10)
                 .Select(p => new ProductCardModel
                 {
                     Id = p.Id,
-                    CategoryId = p.CategoryId,
-                    Article = p.Article,
                     Name = p.Name,
                     Slug = p.Slug,
-                    Description = p.Description,
                     Price = p.Price,
                     Quantity = p.Quantity,
                     Rating = p.Rating,
@@ -57,16 +55,11 @@ namespace SeedStore.Store.Products.Repositories
                         .Where(d => d.ProductId == p.Id &&
                             _context.DiscountGroups.Any(g => g.Id == d.GroupId && g.IsActive && g.StartDate <= now && g.EndDate >= now))
                         .Select(d => (decimal?)(p.Price - p.Price * d.DiscountPercent / 100))
-                        .FirstOrDefault(),
-                    DiscountEndDate = _context.Discounts
-                        .Where(d => d.ProductId == p.Id &&
-                            _context.DiscountGroups.Any(g => g.Id == d.GroupId && g.IsActive && g.StartDate <= now && g.EndDate >= now))
-                        .Select(d => _context.DiscountGroups.Where(g => g.Id == d.GroupId).Select(g => (DateTime?)g.EndDate).FirstOrDefault())
                         .FirstOrDefault()
                 })
                 .ToListAsync();
 
-            var popularTask = await _context.Products
+            var popular = await _context.Products
                 .Where(p => p.IsActive)
                 .OrderByDescending(p => p.Rating)
                 .ThenByDescending(p => p.CreatedDate)
@@ -74,11 +67,8 @@ namespace SeedStore.Store.Products.Repositories
                 .Select(p => new ProductCardModel
                 {
                     Id = p.Id,
-                    CategoryId = p.CategoryId,
-                    Article = p.Article,
                     Name = p.Name,
                     Slug = p.Slug,
-                    Description = p.Description,
                     Price = p.Price,
                     Quantity = p.Quantity,
                     Rating = p.Rating,
@@ -91,16 +81,11 @@ namespace SeedStore.Store.Products.Repositories
                         .Where(d => d.ProductId == p.Id &&
                             _context.DiscountGroups.Any(g => g.Id == d.GroupId && g.IsActive && g.StartDate <= now && g.EndDate >= now))
                         .Select(d => (decimal?)(p.Price - p.Price * d.DiscountPercent / 100))
-                        .FirstOrDefault(),
-                    DiscountEndDate = _context.Discounts
-                        .Where(d => d.ProductId == p.Id &&
-                            _context.DiscountGroups.Any(g => g.Id == d.GroupId && g.IsActive && g.StartDate <= now && g.EndDate >= now))
-                        .Select(d => _context.DiscountGroups.Where(g => g.Id == d.GroupId).Select(g => (DateTime?)g.EndDate).FirstOrDefault())
                         .FirstOrDefault()
                 })
                 .ToListAsync();
 
-            var mostDiscussedTask = await _context.Products
+            var mostDiscussed = await _context.Products
                 .Where(p => p.IsActive)
                 .OrderByDescending(p => p.ReviewCount)
                 .ThenByDescending(p => p.CreatedDate)
@@ -108,11 +93,8 @@ namespace SeedStore.Store.Products.Repositories
                 .Select(p => new ProductCardModel
                 {
                     Id = p.Id,
-                    CategoryId = p.CategoryId,
-                    Article = p.Article,
                     Name = p.Name,
                     Slug = p.Slug,
-                    Description = p.Description,
                     Price = p.Price,
                     Quantity = p.Quantity,
                     Rating = p.Rating,
@@ -125,20 +107,15 @@ namespace SeedStore.Store.Products.Repositories
                         .Where(d => d.ProductId == p.Id &&
                             _context.DiscountGroups.Any(g => g.Id == d.GroupId && g.IsActive && g.StartDate <= now && g.EndDate >= now))
                         .Select(d => (decimal?)(p.Price - p.Price * d.DiscountPercent / 100))
-                        .FirstOrDefault(),
-                    DiscountEndDate = _context.Discounts
-                        .Where(d => d.ProductId == p.Id &&
-                            _context.DiscountGroups.Any(g => g.Id == d.GroupId && g.IsActive && g.StartDate <= now && g.EndDate >= now))
-                        .Select(d => _context.DiscountGroups.Where(g => g.Id == d.GroupId).Select(g => (DateTime?)g.EndDate).FirstOrDefault())
                         .FirstOrDefault()
                 })
                 .ToListAsync();
 
             return new ProductTopResponseModel
             {
-                Newest = newestTask,
-                Popular = popularTask,
-                MostDiscussed = mostDiscussedTask
+                Newest = newest,
+                Popular = popular,
+                MostDiscussed = mostDiscussed
             };
         }
 
@@ -189,47 +166,45 @@ namespace SeedStore.Store.Products.Repositories
             };
         }
 
-        public async Task<List<ProductCardModel>> GetProductsListAsync(ProductListRequestModel request)
+        public async Task<ProductListResponseModel> GetProductsListAsync(ProductListRequestModel request)
         {
             var now = DateTime.UtcNow;
             var query = _context.Products.Where(p => p.IsActive).AsQueryable();
 
             if (request.CategoryId.HasValue)
                 query = query.Where(p => p.CategoryId == request.CategoryId.Value);
-
             if (!string.IsNullOrEmpty(request.CategorySlug))
                 query = query.Where(p => _context.Categories
                     .Any(c => c.Id == p.CategoryId && c.Slug == request.CategorySlug));
-
             if (request.PriceFrom.HasValue)
                 query = query.Where(p => p.Price >= request.PriceFrom.Value);
-
             if (request.PriceTo.HasValue)
                 query = query.Where(p => p.Price <= request.PriceTo.Value);
-
             if (request.InStock == true)
                 query = query.Where(p => p.Quantity > 0);
-
             if (request.HasDiscount == true)
             {
                 query = query.Where(p => _context.Discounts.Any(d =>
                     d.ProductId == p.Id &&
                     _context.DiscountGroups.Any(g => g.Id == d.GroupId && g.IsActive && g.StartDate <= now && g.EndDate >= now)));
             }
-
             if (request.ActiveFilters != null && request.ActiveFilters.Any())
             {
-                foreach (var filter in request.ActiveFilters)
+                var grouped = request.ActiveFilters
+                    .GroupBy(f => f.FeatureSlug)
+                    .ToList();
+
+                foreach (var group in grouped)
                 {
-                    var featureSlug = filter.FeatureSlug;
-                    var valueSlug = filter.ValueSlug;
+                    var featureSlug = group.Key;
+                    var valueSlugs = group.Select(f => f.ValueSlug).ToList();
+
                     query = query.Where(p => _context.ProductFeatures
                         .Any(pf => pf.ProductId == p.Id && pf.IsActive &&
                             _context.Features.Any(f => f.Id == pf.FeatureId && f.Slug == featureSlug) &&
-                            pf.ValueSlug == valueSlug));
+                            valueSlugs.Contains(pf.ValueSlug)));
                 }
             }
-
             if (request.SortByPriceAsc == true)
                 query = query.OrderBy(p => p.Price);
             else if (request.SortByPriceDesc == true)
@@ -237,19 +212,17 @@ namespace SeedStore.Store.Products.Repositories
             else
                 query = query.OrderByDescending(p => p.CreatedDate);
 
-            var skip = (request.Page - 1) * request.PageSize;
+            var totalCount = await query.CountAsync();
 
-            return await query
+            var skip = (request.Page - 1) * request.PageSize;
+            var items = await query
                 .Skip(skip)
                 .Take(request.PageSize)
                 .Select(p => new ProductCardModel
                 {
                     Id = p.Id,
-                    CategoryId = p.CategoryId,
-                    Article = p.Article,
                     Name = p.Name,
                     Slug = p.Slug,
-                    Description = p.Description,
                     Price = p.Price,
                     Quantity = p.Quantity,
                     Rating = p.Rating,
@@ -262,14 +235,15 @@ namespace SeedStore.Store.Products.Repositories
                         .Where(d => d.ProductId == p.Id &&
                             _context.DiscountGroups.Any(g => g.Id == d.GroupId && g.IsActive && g.StartDate <= now && g.EndDate >= now))
                         .Select(d => (decimal?)(p.Price - p.Price * d.DiscountPercent / 100))
-                        .FirstOrDefault(),
-                    DiscountEndDate = _context.Discounts
-                        .Where(d => d.ProductId == p.Id &&
-                            _context.DiscountGroups.Any(g => g.Id == d.GroupId && g.IsActive && g.StartDate <= now && g.EndDate >= now))
-                        .Select(d => _context.DiscountGroups.Where(g => g.Id == d.GroupId).Select(g => (DateTime?)g.EndDate).FirstOrDefault())
                         .FirstOrDefault()
                 })
                 .ToListAsync();
+
+            return new ProductListResponseModel
+            {
+                Items = items,
+                TotalCount = totalCount
+            };
         }
 
         public async Task<ProductDetailsModel?> GetProductDetailsAsync(string idOrSlug)
@@ -328,12 +302,6 @@ namespace SeedStore.Store.Products.Repositories
                 .Select(d => (decimal?)(product.Price - product.Price * d.DiscountPercent / 100))
                 .FirstOrDefaultAsync();
 
-            var discountEndDate = await _context.Discounts
-                .Where(d => d.ProductId == product.Id &&
-                    _context.DiscountGroups.Any(g => g.Id == d.GroupId && g.IsActive && g.StartDate <= now && g.EndDate >= now))
-                .Select(d => _context.DiscountGroups.Where(g => g.Id == d.GroupId).Select(g => (DateTime?)g.EndDate).FirstOrDefault())
-                .FirstOrDefaultAsync();
-
             return new ProductDetailsModel
             {
                 Id = product.Id,
@@ -349,8 +317,7 @@ namespace SeedStore.Store.Products.Repositories
                 ImageUrls = imageUrls,
                 Features = features,
                 HasDiscount = hasDiscount,
-                DiscountPrice = discountPrice,
-                DiscountEndDate = discountEndDate
+                DiscountPrice = discountPrice
             };
         }
 

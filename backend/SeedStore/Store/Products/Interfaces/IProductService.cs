@@ -7,7 +7,7 @@ namespace SeedStore.Store.Products.Interfaces
         Task<List<ProductSearchResponseModel>> SearchProductsAsync(string value);
         Task<ProductTopResponseModel> GetProductsTopAsync();
         Task<CategoryFiltersResponseModel> GetCategoryFiltersAsync(int id);
-        Task<List<ProductCardModel>> GetProductsListAsync(ProductListRequestModel productListRequest);
+        Task<ProductListResponseModel> GetProductsListAsync(ProductListRequestModel productListRequest);
         Task<ProductDetailsModel?> GetProductDetailsAsync(string idOrSlug);
     }
 }

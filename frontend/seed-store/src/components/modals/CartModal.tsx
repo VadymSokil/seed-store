@@ -11,7 +11,7 @@ const CartModal = ({ onClose }: CartModalProps) => {
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const totalCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
-  useModalScrollLock();
+  useModalScrollLock(true);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
@@ -29,7 +29,7 @@ const CartModal = ({ onClose }: CartModalProps) => {
             <div className="overflow-y-auto flex-1">
               {items.map(item => (
                 <div key={item.id} className="flex items-center gap-3 p-4 border-b border-gray-100">
-                  <img src={item.imageUrl} alt={item.name} className="w-14 h-14 object-cover rounded" />
+                  <img src={item.imageUrl} alt={item.name} className="w-14 h-14 object-contain rounded" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium line-clamp-2">{item.name}</p>
                     <p className="text-sm text-green-700 font-bold">{item.price} ₴</p>
