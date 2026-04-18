@@ -15,12 +15,18 @@ namespace SeedStore.Store.Orders.Repositories
             _context = context;
         }
 
-        public async Task<List<AccountOrdersResponseModel>> GetAccountOrdersAsync(int accountId)
+        public async Task<AccountOrdersResponseModel> GetAccountOrdersAsync(int accountId, int page, int pageSize)
         {
-            return await _context.Orders
+            var query = _context.Orders
                 .Where(o => o.AccountId == accountId)
-                .OrderByDescending(o => o.OrderDate)
-                .Select(o => new AccountOrdersResponseModel
+                .OrderByDescending(o => o.OrderDate);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(o => new AccountOrderModel
                 {
                     Id = o.Id,
                     OrderNumber = o.OrderNumber,
@@ -55,11 +61,18 @@ namespace SeedStore.Store.Orders.Repositories
                     Transactions = o.Transactions.Select(t => new OrderTransactionsModel
                     {
                         Amount = t.Amount,
+                        Currency = t.Currency,
                         CreatedAt = t.CreatedAt,
                         IsSuccess = t.Status == "success"
                     }).ToList()
                 })
                 .ToListAsync();
+
+            return new AccountOrdersResponseModel
+            {
+                TotalCount = totalCount,
+                Items = items
+            };
         }
 
         public async Task AddOrderAsync(OrderEntity order)

@@ -28,5 +28,21 @@ namespace SeedStore.Store.StoreInfo.Controllers
             var result = await _storeInfoService.GetPaymentVariantsAsync();
             return Ok(result);
         }
+
+        [HttpGet("about")]
+        public async Task<IActionResult> GetAboutPage()
+        {
+            var result = await _storeInfoService.GetAboutPageAsync();
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+
+        [HttpGet("contacts")]
+        public async Task<IActionResult> GetContacts()
+        {
+            var result = await _storeInfoService.GetContactsAsync();
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
     }
 }

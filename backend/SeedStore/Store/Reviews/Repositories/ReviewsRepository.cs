@@ -4,6 +4,7 @@ using SeedStore.Database.Entities.Store.Account;
 using SeedStore.Database.Entities.Store.Products;
 using SeedStore.Database.Entities.Store.Reviews;
 using SeedStore.Store.Reviews.Interfaces;
+using SeedStore.Store.Reviews.Models;
 using SeedStore.Support.General.Constants.Store;
 
 namespace SeedStore.Store.Reviews.Repositories
@@ -17,10 +18,12 @@ namespace SeedStore.Store.Reviews.Repositories
             _context = context;
         }
 
-        public async Task<List<(ReviewEntity Review, ReviewReplyEntity? Reply, AccountEntity Account)>> GetProductReviewsAsync(int productId)
+        public async Task<(List<(ReviewEntity Review, ReviewReplyEntity? Reply, AccountEntity Account)> items, int totalCount)> GetProductReviewsAsync(int productId, int page, int pageSize, int? accountId)
         {
-            return await _context.Reviews
-                .Where(r => r.ProductId == productId && r.StatusCode == ReviewStatusCodes.Approved)
+            var query = _context.Reviews
+                .Where(r => r.ProductId == productId &&
+                    (r.StatusCode == ReviewStatusCodes.Approved ||
+                     (accountId.HasValue && r.AccountId == accountId)))
                 .Join(
                     _context.Accounts,
                     r => r.AccountId,
@@ -33,14 +36,29 @@ namespace SeedStore.Store.Reviews.Repositories
                     (x, replies) => new { x.Review, x.Account, Replies = replies })
                 .SelectMany(
                     x => x.Replies.DefaultIfEmpty(),
-                    (x, reply) => new ValueTuple<ReviewEntity, ReviewReplyEntity?, AccountEntity>(x.Review, reply, x.Account))
+                    (x, reply) => new { x.Review, x.Account, Reply = reply });
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderByDescending(x => x.Review.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new ValueTuple<ReviewEntity, ReviewReplyEntity?, AccountEntity>(x.Review, x.Reply, x.Account))
                 .ToListAsync();
+            return (items, totalCount);
         }
 
-        public async Task<List<(ReviewEntity Review, ReviewReplyEntity? Reply)>> GetAccountReviewsAsync(int accountId)
+        public async Task<AccountReviewsResponseModel> GetAccountReviewsAsync(int accountId, int page, int pageSize)
         {
-            return await _context.Reviews
+            var query = _context.Reviews
                 .Where(r => r.AccountId == accountId)
+                .OrderByDescending(r => r.CreatedAt);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .GroupJoin(
                     _context.ReviewReplies,
                     r => r.Id,
@@ -50,6 +68,27 @@ namespace SeedStore.Store.Reviews.Repositories
                     x => x.Replies.DefaultIfEmpty(),
                     (x, reply) => new ValueTuple<ReviewEntity, ReviewReplyEntity?>(x.Review, reply))
                 .ToListAsync();
+
+            return new AccountReviewsResponseModel
+            {
+                TotalCount = totalCount,
+                Items = items.Select(x => new AccountReviewModel
+                {
+                    Id = x.Item1.Id,
+                    ProductId = x.Item1.ProductId,
+                    ProductNameSnapshot = x.Item1.ProductNameSnapshot,
+                    ProductImageUrlSnapshot = x.Item1.ProductImageUrlSnapshot,
+                    Rating = x.Item1.Rating,
+                    Text = x.Item1.Text,
+                    CreatedAt = x.Item1.CreatedAt,
+                    UpdatedAt = x.Item1.UpdatedAt,
+                    StatusCode = x.Item1.StatusCode,
+                    ModeratorComment = x.Item1.ModeratorComment,
+                    Reply = x.Item2?.Text,
+                    ReplyCreatedAt = x.Item2?.CreatedAt,
+                    ReplyUpdatedAt = x.Item2?.UpdatedAt
+                }).ToList()
+            };
         }
 
 

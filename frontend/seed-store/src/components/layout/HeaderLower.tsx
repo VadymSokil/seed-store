@@ -1,16 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, Tag, Scale, Heart, ShoppingCart, User, Search, Globe } from 'lucide-react';
+import { Menu, Tag, Scale, Heart, ShoppingCart, User, Search } from 'lucide-react';
 import CartModal from '../modals/CartModal';
 import CabinetModal from '../modals/CabinetModal';
 import CompareModal from '../modals/CompareModal';
 import SearchModal from '../modals/SearchModal';
-import LanguageModal from '../modals/LanguageModal';
 import { useCartStore } from '../../store/useCartStore';
 import { useFavoritesStore } from '../../store/useFavoritesStore';
 import { useCompareStore } from '../../store/useCompareStore';
 import CounterBadge from '../ui/CounterBadge';
-import { useLanguage } from '../../hooks/useLanguage';
+import { useAuthStore } from '../../store/useAuthStore';
 
 const HeaderLower = () => {
   const [isCabinetOpen, setIsCabinetOpen] = useState(false);
@@ -18,9 +17,7 @@ const HeaderLower = () => {
   const [isCompareOpen, setIsCompareOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isDesktopSearchOpen, setIsDesktopSearchOpen] = useState(false);
-  const [isLanguageOpen, setIsLanguageOpen] = useState(false);
 
-  const { language, toggleLanguage } = useLanguage();
   const navigate = useNavigate();
 
   const cartCount = useCartStore((state) => state.count);
@@ -43,6 +40,16 @@ const HeaderLower = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const account = useAuthStore(s => s.account);
+
+const handleCabinetClick = () => {
+  if (account) {
+    navigate('/cabinet');
+  } else {
+    setIsCabinetOpen(true);
+  }
+};
+
   return (
     <div className="bg-white py-3">
       {isCartOpen && <CartModal onClose={() => setIsCartOpen(false)} />}
@@ -50,18 +57,17 @@ const HeaderLower = () => {
       {isCompareOpen && <CompareModal onClose={() => setIsCompareOpen(false)} />}
       {isSearchModalOpen && <SearchModal onClose={() => setIsSearchModalOpen(false)} />}
       {isDesktopSearchOpen && <SearchModal onClose={() => setIsDesktopSearchOpen(false)} anchorRef={desktopSearchRef} />}
-      {isLanguageOpen && <LanguageModal onClose={() => setIsLanguageOpen(false)} language={language} onLanguageChange={toggleLanguage} />}
 
       {/* Мобільна версія */}
       <div className="md:hidden px-4">
-        <div className="grid grid-cols-8 gap-1">
+        <div className="grid grid-cols-7 gap-1">
           <button
             onClick={() => navigate('/catalog')}
             className="relative flex justify-center items-center aspect-square border border-gray-300 text-gray-400 rounded hover:border-green-700 hover:text-green-700 transition-colors"
           >
             <Menu size={20} strokeWidth={2.5} />
           </button>
-          <button className="relative flex justify-center items-center aspect-square border border-gray-300 text-gray-400 rounded hover:border-green-700 hover:text-green-700 transition-colors">
+          <button onClick={() => navigate('/discounts')} className="relative flex justify-center items-center aspect-square border border-gray-300 text-gray-400 rounded hover:border-green-700 hover:text-green-700 transition-colors">
             <Tag size={20} strokeWidth={2.5} />
           </button>
           <button
@@ -86,7 +92,7 @@ const HeaderLower = () => {
             <CounterBadge count={cartCount} />
           </button>
           <button
-            onClick={() => setIsCabinetOpen(!isCabinetOpen)}
+            onClick={handleCabinetClick}
             className="flex justify-center items-center aspect-square border border-gray-300 text-gray-400 rounded hover:border-green-700 hover:text-green-700 transition-colors"
           >
             <User size={20} strokeWidth={2.5} />
@@ -96,12 +102,6 @@ const HeaderLower = () => {
             className="flex justify-center items-center aspect-square border border-gray-300 text-gray-400 rounded hover:border-green-700 hover:text-green-700 transition-colors"
           >
             <Search size={20} strokeWidth={2.5} />
-          </button>
-          <button
-            onClick={() => setIsLanguageOpen(true)}
-            className="flex justify-center items-center aspect-square border border-gray-300 text-gray-400 rounded hover:border-green-700 hover:text-green-700 transition-colors"
-          >
-            <Globe size={20} strokeWidth={2.5} />
           </button>
         </div>
       </div>
@@ -131,7 +131,7 @@ const HeaderLower = () => {
             </div>
           </div>
         </div>
-        <button className="border border-gray-300 text-gray-400 px-[9px] py-[9px] rounded hover:border-green-700 hover:text-green-700 active:border-green-700 active:text-green-700 transition-colors">
+        <button onClick={() => navigate('/discounts')} className="border border-gray-300 text-gray-400 px-[9px] py-[9px] rounded hover:border-green-700 hover:text-green-700 active:border-green-700 active:text-green-700 transition-colors">
           <Tag size={20} strokeWidth={2.5} />
         </button>
         <button
@@ -156,16 +156,10 @@ const HeaderLower = () => {
           <CounterBadge count={cartCount} />
         </button>
         <button
-          onClick={() => setIsCabinetOpen(!isCabinetOpen)}
+          onClick={handleCabinetClick}
           className="border border-gray-300 text-gray-400 px-[9px] py-[9px] rounded hover:border-green-700 hover:text-green-700 active:border-green-700 active:text-green-700 transition-colors"
         >
           <User size={20} strokeWidth={2.5} />
-        </button>
-        <button
-          onClick={() => setIsLanguageOpen(true)}
-          className="border border-gray-300 text-gray-400 px-[9px] py-[9px] rounded hover:border-green-700 hover:text-green-700 active:border-green-700 active:text-green-700 transition-colors"
-        >
-          <Globe size={20} strokeWidth={2.5} />
         </button>
       </div>
     </div>

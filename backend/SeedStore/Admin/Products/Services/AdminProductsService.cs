@@ -566,6 +566,7 @@ namespace SeedStore.Admin.Products.Services
                 EndDate = model.EndDate,
                 IsActive = model.IsActive
             });
+            _cache.Remove(CacheKeys.DiscountGroups);
 
             var initiator = await _repository.GetEmployeeByIdAsync(initiatorId);
             await _employeesActivityService.LogAsync(initiatorId, $"{initiator!.Role!.Name} {initiator.Name}({initiatorId}) створив(ла) групу знижок {model.Name}.");
@@ -587,6 +588,7 @@ namespace SeedStore.Admin.Products.Services
             group.EndDate = model.EndDate;
             group.IsActive = model.IsActive;
             await _repository.UpdateDiscountGroupAsync(group);
+            _cache.Remove(CacheKeys.DiscountGroups);
 
             var initiator = await _repository.GetEmployeeByIdAsync(initiatorId);
             var after = JsonSerializer.Serialize(new { model.Name, model.StartDate, model.EndDate, model.IsActive });
@@ -603,6 +605,7 @@ namespace SeedStore.Admin.Products.Services
                 return "not_found";
 
             await _repository.DeleteDiscountGroupAsync(group);
+            _cache.Remove(CacheKeys.DiscountGroups);
 
             var initiator = await _repository.GetEmployeeByIdAsync(initiatorId);
             await _employeesActivityService.LogAsync(initiatorId, $"{initiator!.Role!.Name} {initiator.Name}({initiatorId}) видалив(ла) групу знижок {group.Name}.");
@@ -641,6 +644,7 @@ namespace SeedStore.Admin.Products.Services
                 ProductId = model.ProductId,
                 DiscountPercent = model.DiscountPercent
             });
+            _cache.Remove(CacheKeys.DiscountGroups);
 
             var initiator = await _repository.GetEmployeeByIdAsync(initiatorId);
             var product = await _repository.GetProductByIdAsync(model.ProductId);
@@ -660,6 +664,7 @@ namespace SeedStore.Admin.Products.Services
 
             discount.DiscountPercent = model.DiscountPercent;
             await _repository.UpdateDiscountAsync(discount);
+            _cache.Remove(CacheKeys.DiscountGroups);
 
             var initiator = await _repository.GetEmployeeByIdAsync(initiatorId);
             var after = model.DiscountPercent.ToString();
@@ -677,6 +682,7 @@ namespace SeedStore.Admin.Products.Services
                 return "not_found";
 
             await _repository.DeleteDiscountAsync(discount);
+            _cache.Remove(CacheKeys.DiscountGroups);
 
             var initiator = await _repository.GetEmployeeByIdAsync(initiatorId);
             var product = await _repository.GetProductByIdAsync(discount.ProductId);
@@ -746,6 +752,7 @@ namespace SeedStore.Admin.Products.Services
             var currentOrder = await _repository.GetDiscountGroupsOrderAsync();
             var before = JsonSerializer.Serialize(currentOrder);
             await _repository.ReorderDiscountGroupsAsync(items);
+            _cache.Remove(CacheKeys.DiscountGroups);
             var after = JsonSerializer.Serialize(items);
             var initiator = await _repository.GetEmployeeByIdAsync(initiatorId);
             await _employeesActivityService.LogAsync(initiatorId, $"{initiator!.Role!.Name} {initiator.Name}({initiatorId}) змінив(ла) порядок груп знижок.", before, after);

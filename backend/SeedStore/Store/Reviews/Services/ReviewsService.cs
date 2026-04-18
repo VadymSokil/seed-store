@@ -23,11 +23,10 @@ namespace SeedStore.Store.Reviews.Services
             _productRepository = productRepository;
         }
 
-        public async Task<List<ProductReviewsResponseModel>> GetProductReviewsAsync(int productId)
+        public async Task<ProductReviewsListResponseModel> GetProductReviewsAsync(int productId, int page, int pageSize, int? accountId)
         {
-            var reviews = await _reviewsRepository.GetProductReviewsAsync(productId);
-
-            return reviews.Select(x => new ProductReviewsResponseModel
+            var (items, totalCount) = await _reviewsRepository.GetProductReviewsAsync(productId, page, pageSize, accountId);
+            var reviews = items.Select(x => new ProductReviewsResponseModel
             {
                 Id = x.Item1.Id,
                 AccountId = x.Item1.AccountId,
@@ -39,30 +38,15 @@ namespace SeedStore.Store.Reviews.Services
                 UpdatedAt = x.Item1.UpdatedAt,
                 Reply = x.Item2?.Text,
                 ReplyCreatedAt = x.Item2?.CreatedAt,
-                ReplyUpdatedAt = x.Item2?.UpdatedAt
+                ReplyUpdatedAt = x.Item2?.UpdatedAt,
+                IsPending = x.Item1.StatusCode == ReviewStatusCodes.Pending
             }).ToList();
+            return new ProductReviewsListResponseModel { Reviews = reviews, TotalCount = totalCount };
         }
 
-        public async Task<List<AccountReviewsResponseModel>> GetAccountReviewsAsync(int accountId)
+        public async Task<AccountReviewsResponseModel> GetAccountReviewsAsync(int accountId, int page, int pageSize)
         {
-            var reviews = await _reviewsRepository.GetAccountReviewsAsync(accountId);
-
-            return reviews.Select(x => new AccountReviewsResponseModel
-            {
-                Id = x.Item1.Id,
-                ProductId = x.Item1.ProductId,
-                ProductNameSnapshot = x.Item1.ProductNameSnapshot,
-                ProductImageUrlSnapshot = x.Item1.ProductImageUrlSnapshot,
-                Rating = x.Item1.Rating,
-                Text = x.Item1.Text,
-                CreatedAt = x.Item1.CreatedAt,
-                UpdatedAt = x.Item1.UpdatedAt,
-                StatusCode = x.Item1.StatusCode,
-                ModeratorComment = x.Item1.ModeratorComment,
-                Reply = x.Item2?.Text,
-                ReplyCreatedAt = x.Item2?.CreatedAt,
-                ReplyUpdatedAt = x.Item2?.UpdatedAt
-            }).ToList();
+            return await _reviewsRepository.GetAccountReviewsAsync(accountId, page, pageSize);
         }
 
         public async Task<string> AddReviewAsync(int accountId, AddReviewModel model)

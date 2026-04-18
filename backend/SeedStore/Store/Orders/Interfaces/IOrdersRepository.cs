@@ -5,7 +5,7 @@ namespace SeedStore.Store.Orders.Interfaces
 {
     public interface IOrdersRepository
     {
-        Task<List<AccountOrdersResponseModel>> GetAccountOrdersAsync(int accountId);
+        Task<AccountOrdersResponseModel> GetAccountOrdersAsync(int accountId, int page, int pageSize);
         Task AddOrderAsync(OrderEntity order);
         Task<Dictionary<int, (string name, string? imageUrl)>> GetProductSnapshotsAsync(List<int> productIds);
 

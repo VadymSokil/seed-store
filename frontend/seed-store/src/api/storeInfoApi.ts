@@ -13,3 +13,9 @@ export const getDeliveryVariants = (): Promise<StoreInfoVariant[]> =>
 
 export const getPaymentVariants = (): Promise<StoreInfoVariant[]> =>
   api.get<StoreInfoVariant[]>('/api/store-info/payment-variants').then(r => r.data);
+
+export const getAboutPage = (): Promise<string> =>
+  api.get<string>('/api/store-info/about').then(r => r.data);
+
+export const getContacts = (): Promise<string> =>
+  api.get<string>('/api/store-info/contacts').then(r => r.data);

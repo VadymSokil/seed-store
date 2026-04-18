@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import { getCategories } from '../../api/catalogApi';
@@ -30,9 +30,39 @@ const defaultFilters: Filters = {
   sortByPriceDesc: null,
 };
 
+const parseFiltersFromUrl = (params: URLSearchParams, filtersData: ProductFiltersResponse): {
+  activeFilters: ActiveFilter[];
+  selectedFeatures: Record<number, Set<string>>;
+  filters: Filters;
+} => {
+  const activeFilters: ActiveFilter[] = [];
+  const selectedFeatures: Record<number, Set<string>> = {};
+  const filters: Filters = {
+    priceFrom: params.get('price_from') ? Number(params.get('price_from')) : null,
+    priceTo: params.get('price_to') ? Number(params.get('price_to')) : null,
+    hasDiscount: params.get('has_discount') === '1' ? true : null,
+    inStock: params.get('in_stock') === '1' ? true : null,
+    sortByPriceAsc: params.get('sort') === 'price_asc' ? true : null,
+    sortByPriceDesc: params.get('sort') === 'price_desc' ? true : null,
+  };
+  const reservedKeys = new Set(['price_from', 'price_to', 'has_discount', 'in_stock', 'sort']);
+  for (const [featureSlug, valueSlugsStr] of params.entries()) {
+    if (reservedKeys.has(featureSlug)) continue;
+    const feature = filtersData.features.find(f => f.slug === featureSlug);
+    if (!feature) continue;
+    const valueSlugs = valueSlugsStr.split(',').filter(Boolean);
+    selectedFeatures[feature.id] = new Set(valueSlugs);
+    for (const valueSlug of valueSlugs) {
+      activeFilters.push({ featureSlug, valueSlug });
+    }
+  }
+  return { activeFilters, selectedFeatures, filters };
+};
+
 export default function CategoryPage() {
   const { '*': splat } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<TopProduct[]>([]);
@@ -66,16 +96,12 @@ export default function CategoryPage() {
   const breadcrumbChain = useMemo(() => {
     const chain: Category[] = [];
     let currentParentId: number | null = null;
-
     for (const slug of slugs) {
-      const found = categories.find(
-        c => c.slug === slug && c.parentId === currentParentId
-      );
+      const found = categories.find(c => c.slug === slug && c.parentId === currentParentId);
       if (!found) break;
       chain.push(found);
       currentParentId = found.id;
     }
-
     return chain;
   }, [slugs, categories]);
 
@@ -88,12 +114,21 @@ export default function CategoryPage() {
     setActiveFilters([]);
     setSelectedFeatures({});
     setFiltersData(null);
+    setSearchParams({}, { replace: true });
   }, [currentCategory?.id]);
 
   useEffect(() => {
     if (!currentCategory) return;
     getProductFilters(currentCategory.id).then(setFiltersData).catch(console.error);
   }, [currentCategory?.id]);
+
+  useEffect(() => {
+    if (!filtersData) return;
+    const { activeFilters, selectedFeatures, filters } = parseFiltersFromUrl(searchParams, filtersData);
+    setActiveFilters(activeFilters);
+    setSelectedFeatures(selectedFeatures);
+    setFilters(filters);
+  }, [filtersData]);
 
   useEffect(() => {
     setPage(prev => prev === 1 ? prev : 1);
@@ -117,6 +152,35 @@ export default function CategoryPage() {
       .finally(() => setIsLoadingProducts(false));
   }, [currentCategory?.id, page, stableFilters, activeFilters]);
 
+  const syncUrl = (newActiveFilters: ActiveFilter[], newFilters: Filters) => {
+    const params = new URLSearchParams();
+    const grouped = newActiveFilters.reduce((acc, f) => {
+      if (!acc[f.featureSlug]) acc[f.featureSlug] = [];
+      acc[f.featureSlug].push(f.valueSlug);
+      return acc;
+    }, {} as Record<string, string[]>);
+    for (const [slug, values] of Object.entries(grouped)) {
+      params.set(slug, values.join(','));
+    }
+    if (newFilters.priceFrom) params.set('price_from', String(newFilters.priceFrom));
+    if (newFilters.priceTo) params.set('price_to', String(newFilters.priceTo));
+    if (newFilters.hasDiscount) params.set('has_discount', '1');
+    if (newFilters.inStock) params.set('in_stock', '1');
+    if (newFilters.sortByPriceAsc) params.set('sort', 'price_asc');
+    else if (newFilters.sortByPriceDesc) params.set('sort', 'price_desc');
+    setSearchParams(params, { replace: true });
+  };
+
+  const handleActiveFiltersChange = (newFilters: ActiveFilter[]) => {
+    setActiveFilters(newFilters);
+    syncUrl(newFilters, filters);
+  };
+
+  const handleFiltersChange = (newFilters: Filters) => {
+    setFilters(newFilters);
+    syncUrl(activeFilters, newFilters);
+  };
+
   const getPageNumbers = () => {
     if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
     if (page <= 3) return [1, 2, 3, 4, '...', totalPages];
@@ -130,10 +194,10 @@ export default function CategoryPage() {
         isOpen={isFiltersModalOpen}
         onClose={() => setIsFiltersModalOpen(false)}
         filters={filters}
-        onFiltersChange={setFilters}
+        onFiltersChange={handleFiltersChange}
         filtersData={filtersData}
         activeFilters={activeFilters}
-        onActiveFiltersChange={setActiveFilters}
+        onActiveFiltersChange={handleActiveFiltersChange}
         selectedFeatures={selectedFeatures}
         onSelectedFeaturesChange={setSelectedFeatures}
       />
@@ -141,20 +205,14 @@ export default function CategoryPage() {
       <div className="py-8">
         <div className="flex flex-wrap items-center justify-between mb-6">
           <nav className="flex items-center gap-2 text-sm text-gray-500">
-            <span className="cursor-pointer hover:text-green-600" onClick={() => navigate('/')}>
-              Головна
-            </span>
+            <span className="cursor-pointer hover:text-green-600" onClick={() => navigate('/')}>Головна</span>
             <span>/</span>
-            <span className="cursor-pointer hover:text-green-600" onClick={() => navigate('/catalog')}>
-              Каталог
-            </span>
+            <span className="cursor-pointer hover:text-green-600" onClick={() => navigate('/catalog')}>Каталог</span>
             {breadcrumbChain.map((cat, i) => (
               <span key={cat.id} className="flex items-center gap-2">
                 <span>/</span>
                 <span
-                  className={`cursor-pointer hover:text-green-600 ${
-                    i === breadcrumbChain.length - 1 ? 'text-gray-800 font-medium' : ''
-                  }`}
+                  className={`cursor-pointer hover:text-green-600 ${i === breadcrumbChain.length - 1 ? 'text-gray-800 font-medium' : ''}`}
                   onClick={() => navigate('/catalog/' + slugs.slice(0, i + 1).join('/'))}
                 >
                   {cat.name}

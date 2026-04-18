@@ -13,5 +13,6 @@
         public string? Reply { get; set; }
         public DateTime? ReplyCreatedAt { get; set; }
         public DateTime? ReplyUpdatedAt { get; set; }
+        public bool IsPending { get; set; }
     }
 }

@@ -10,5 +10,8 @@
         public const string Top = "top";
         public const string DeliveryVariants = "delivery_variants";
         public const string PaymentVariants = "payment_variants";
+        public const string DiscountGroups = "discount_groups";
+        public const string AboutPage = "AboutPage";
+        public const string Contacts = "Contacts";
     }
 }

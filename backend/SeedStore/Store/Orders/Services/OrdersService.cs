@@ -3,8 +3,10 @@ using SeedStore.Store.Orders.Interfaces;
 using SeedStore.Store.Orders.Models;
 using SeedStore.Support.General.Constants.Store;
 using SeedStore.Support.General.TokenGeneration.Interfaces;
+using SeedStore.Support.Store.Dictionary.NovaPoshtaDelivery.Interfaces;
+using SeedStore.Support.Store.Dictionary.NovaPoshtaDelivery.Models;
 using SeedStore.Support.Store.Notifications.Interfaces;
-using SeedStore.Support.Store.Payment.Interfaces;
+using SeedStore.Support.Store.Payment.LiqPay.Interfaces;
 
 namespace SeedStore.Store.Orders.Services
 {
@@ -12,35 +14,36 @@ namespace SeedStore.Store.Orders.Services
     {
         private readonly IOrdersRepository _ordersRepository;
         private readonly ITokenGenerationService _tokenGenerationService;
-        private readonly IPaymentService _paymentService;
+        private readonly ILiqPayService _paymentService;
         private readonly INotificationService _notificationService;
+        private readonly INovaPoshtaDeliveryService _novaPoshtaDeliveryService;
 
-        public OrdersService(IOrdersRepository ordersRepository, ITokenGenerationService tokenGenerationService, IPaymentService paymentService, INotificationService notificationService)
+        public OrdersService(IOrdersRepository ordersRepository, ITokenGenerationService tokenGenerationService, ILiqPayService paymentService, INotificationService notificationService, INovaPoshtaDeliveryService novaPoshtaDeliveryService)
         {
             _ordersRepository = ordersRepository;
             _tokenGenerationService = tokenGenerationService;
             _paymentService = paymentService;
             _notificationService = notificationService;
+            _novaPoshtaDeliveryService = novaPoshtaDeliveryService;
         }
 
-        public async Task<(string status, List<AccountOrdersResponseModel>? orders)> GetAccountOrdersAsync(int accountId)
+        public async Task<(string status, AccountOrdersResponseModel? data)> GetAccountOrdersAsync(int accountId, int page, int pageSize)
         {
-            var orders = await _ordersRepository.GetAccountOrdersAsync(accountId);
-            return ("ok", orders);
+            var result = await _ordersRepository.GetAccountOrdersAsync(accountId, page, pageSize);
+            return ("ok", result);
         }
 
         public async Task<(string status, object? data)> AddOrderAsync(AddOrderModel model, int? accountId)
         {
             if (model.DeliveryCode == DeliveryCodes.NovaPost && string.IsNullOrEmpty(model.PostalOfficeNumber))
                 return ("invalid_postal_office", null);
-
             if (model.DeliveryCode == DeliveryCodes.Courier &&
-                (string.IsNullOrEmpty(model.City) || string.IsNullOrEmpty(model.Street) || string.IsNullOrEmpty(model.HouseNumber)))
+                (string.IsNullOrEmpty(model.City) && string.IsNullOrEmpty(model.Settlement) ||
+                 string.IsNullOrEmpty(model.Street) || string.IsNullOrEmpty(model.HouseNumber)))
                 return ("invalid_address", null);
 
             var productIds = model.Items.Select(i => i.ProductId).ToList();
             var snapshots = await _ordersRepository.GetProductSnapshotsAsync(productIds);
-
             var orderNumber = _tokenGenerationService.GenerateOrderNumber();
 
             var order = new OrderEntity
@@ -49,6 +52,7 @@ namespace SeedStore.Store.Orders.Services
                 OrderDate = DateTime.UtcNow,
                 StatusCode = OrderStatusCodes.Pending,
                 Comment = model.Comment,
+                CustomerComment = model.CustomerComment,
                 DeliveryCode = model.DeliveryCode,
                 PaymentCode = model.PaymentCode,
                 PostalOfficeNumber = model.PostalOfficeNumber,
@@ -84,10 +88,10 @@ namespace SeedStore.Store.Orders.Services
             {
                 var description = $"Оплата замовлення {orderNumber}";
                 var (data, signature) = _paymentService.GetPaymentData(orderNumber, order.TotalAmount, description);
-                return ("ok", new { data, signature });
+                return ("ok", new { orderNumber, data, signature });
             }
 
-            return ("ok", null);
+            return ("ok", new { orderNumber });
         }
 
         public async Task<string> ProcessPaymentCallbackAsync(PaymentCallbackModel model)
@@ -118,12 +122,36 @@ namespace SeedStore.Store.Orders.Services
 
             if (callbackData.Status == "success")
             {
-                order.StatusCode = OrderStatusCodes.Processing;
                 order.PaidAt = DateTime.UtcNow;
                 await _ordersRepository.UpdateOrderAsync(order);
             }
 
             return "ok";
+        }
+
+        public async Task<(string status, object? data)> GetPaymentDataAsync(string orderNumber, int accountId)
+        {
+            var order = await _ordersRepository.GetOrderByNumberAsync(orderNumber);
+            if (order == null)
+                return ("not_found", null);
+            if (order.AccountId != accountId)
+                return ("forbidden", null);
+            if (order.PaidAt != null)
+                return ("already_paid", null);
+
+            var description = $"Оплата замовлення {orderNumber}";
+            var (data, signature) = _paymentService.GetPaymentData(orderNumber, order.TotalAmount, description);
+            return ("ok", new { data, signature });
+        }
+
+        public async Task<List<NovaPoshtaSettlementModel>> SearchSettlementsAsync(string value)
+        {
+            return await _novaPoshtaDeliveryService.SearchSettlementsAsync(value);
+        }
+
+        public async Task<List<NovaPoshtaWarehouseModel>> SearchWarehousesAsync(string settlementId, string? value)
+        {
+            return await _novaPoshtaDeliveryService.SearchWarehousesAsync(settlementId, value);
         }
     }
 }

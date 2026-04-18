@@ -53,5 +53,25 @@ namespace SeedStore.Store.StoreInfo.Services
             _cache.Set(CacheKeys.PaymentVariants, result, TimeSpan.FromHours(1));
             return result;
         }
+
+        public async Task<string?> GetAboutPageAsync()
+        {
+            if (_cache.TryGetValue(CacheKeys.AboutPage, out string? cached))
+                return cached;
+            var entity = await _storeInfoRepository.GetAboutPageAsync();
+            if (entity == null) return null;
+            _cache.Set(CacheKeys.AboutPage, entity.Content, TimeSpan.FromHours(1));
+            return entity.Content;
+        }
+
+        public async Task<string?> GetContactsAsync()
+        {
+            if (_cache.TryGetValue(CacheKeys.Contacts, out string? cached))
+                return cached;
+            var entity = await _storeInfoRepository.GetContactsAsync();
+            if (entity == null) return null;
+            _cache.Set(CacheKeys.Contacts, entity.Content, TimeSpan.FromHours(1));
+            return entity.Content;
+        }
     }
 }

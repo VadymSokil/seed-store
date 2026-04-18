@@ -75,6 +75,20 @@ namespace SeedStore.Store.Account.Controllers
             };
         }
 
+        [HttpPost("resend-email-code")]
+        public async Task<IActionResult> ResendEmailChangeCode()
+        {
+            var accountId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _accountService.ResendEmailChangeCodeAsync(accountId);
+
+            return result switch
+            {
+                "ok" => Ok(),
+                "not_found" => NotFound(),
+                _ => StatusCode(500)
+            };
+        }
+
         [HttpPut("phone")]
         public async Task<IActionResult> ChangePhone([FromBody] ChangePhoneModel model)
         {

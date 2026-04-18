@@ -127,6 +127,7 @@ const SearchModal = ({ onClose, anchorRef }: SearchModalProps) => {
             className="flex-1 px-3 py-2 outline-none text-base"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && query) handleShowAll(); }}
           />
           <div className="border-l px-3 flex items-center">
             <Search size={20} strokeWidth={2.5} className="text-gray-400" />
@@ -153,6 +154,7 @@ const SearchModal = ({ onClose, anchorRef }: SearchModalProps) => {
               className="flex-1 px-3 py-2 outline-none"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && query) handleShowAll(); }}
             />
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-red-400 transition-colors">

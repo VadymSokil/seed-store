@@ -22,8 +22,6 @@ using SeedStore.Support.Store.Email.Services;
 using SeedStore.Support.Store.Notifications.Hubs;
 using SeedStore.Support.Store.Notifications.Interfaces;
 using SeedStore.Support.Store.Notifications.Services;
-using SeedStore.Support.Store.Payment.Interfaces;
-using SeedStore.Support.Store.Payment.Services;
 using SeedStore.Support.Admin.EmployeesActivity.Interfaces;
 using SeedStore.Support.Admin.EmployeesActivity.Repository;
 using SeedStore.Support.Admin.EmployeesActivity.Services;
@@ -79,6 +77,12 @@ using SeedStore.Admin.Stats.Services;
 using SeedStore.Admin.StoreInfo.Interfaces;
 using SeedStore.Admin.StoreInfo.Repositories;
 using SeedStore.Admin.StoreInfo.Services;
+using SeedStore.Support.Store.Payment.LiqPay.Interfaces;
+using SeedStore.Support.Store.Payment.LiqPay.Services;
+using SeedStore.Support.Store.Dictionary.NovaPoshtaDelivery.Services;
+using SeedStore.Support.Store.Dictionary.NovaPoshtaDelivery.Interfaces;
+using SeedStore.Support.Store.Captcha.Cloudflare.Interfaces;
+using SeedStore.Support.Store.Captcha.Cloudflare.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -97,9 +101,13 @@ builder.Services.AddScoped<ILoggingService, LoggingService>();
 
 // Store support
 builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<ILiqPayService, LiqPayService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddHostedService<CleanupService>();
+builder.Services.AddHttpClient<NovaPoshtaDeliveryService>();
+builder.Services.AddScoped<INovaPoshtaDeliveryService, NovaPoshtaDeliveryService>();
+builder.Services.AddHttpClient<CloudflareService>();
+builder.Services.AddScoped<ICloudflareService, CloudflareService>();
 
 // Admin support
 builder.Services.AddScoped<IEmployeesActivityRepository, EmployeesActivityRepository>();
@@ -278,7 +286,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins("https://localhost:5173")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();

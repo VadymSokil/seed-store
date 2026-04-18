@@ -136,5 +136,27 @@ namespace SeedStore.Admin.StoreInfo.Repositories
                 .Select(p => new ReorderItemModel { Id = p.Id, ViewOrder = p.ViewOrder ?? 0 })
                 .ToListAsync();
         }
+
+        public async Task<AboutPageEntity?> GetAboutPageAsync()
+        {
+            return await _context.AboutPages.FirstOrDefaultAsync();
+        }
+
+        public async Task UpdateAboutPageAsync(AboutPageEntity entity)
+        {
+            _context.AboutPages.Update(entity);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<ContactsEntity?> GetContactsAsync()
+        {
+            return await _context.Contacts.FirstOrDefaultAsync();
+        }
+
+        public async Task UpdateContactsAsync(ContactsEntity entity)
+        {
+            _context.Contacts.Update(entity);
+            await _context.SaveChangesAsync();
+        }
     }
 }

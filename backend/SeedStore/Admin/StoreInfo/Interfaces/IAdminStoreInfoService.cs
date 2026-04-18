@@ -17,5 +17,10 @@ namespace SeedStore.Admin.StoreInfo.Interfaces
 
         Task ReorderDeliveryVariantsAsync(List<ReorderItemModel> items, int initiatorId);
         Task ReorderPaymentVariantsAsync(List<ReorderItemModel> items, int initiatorId);
+
+        Task<string?> GetAboutPageAsync();
+        Task<string> UpdateAboutPageAsync(UpdatePageContentModel model, int initiatorId);
+        Task<string?> GetContactsAsync();
+        Task<string> UpdateContactsAsync(UpdatePageContentModel model, int initiatorId);
     }
 }

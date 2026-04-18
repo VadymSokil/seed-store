@@ -50,5 +50,12 @@ namespace SeedStore.Store.Products.Controllers
             var result = await _productService.GetProductDetailsAsync(idOrSlug);
             return Ok(result);
         }
+
+        [HttpGet("discounts")]
+        public async Task<IActionResult> GetActiveDiscountGroups()
+        {
+            var result = await _productService.GetActiveDiscountGroupsAsync();
+            return Ok(result);
+        }
     }
 }

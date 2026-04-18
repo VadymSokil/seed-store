@@ -572,6 +572,10 @@ namespace SeedStore.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<string>("CustomerComment")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<string>("DeliveryCode")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -646,9 +650,6 @@ namespace SeedStore.Migrations
                     b.Property<int?>("TakenByEmployeeId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("TakenByEmployeeId1")
-                        .HasColumnType("integer");
-
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("numeric(10,2)");
 
@@ -667,8 +668,6 @@ namespace SeedStore.Migrations
                     b.HasIndex("StatusCode");
 
                     b.HasIndex("TakenByEmployeeId");
-
-                    b.HasIndex("TakenByEmployeeId1");
 
                     b.ToTable("Orders", (string)null);
                 });
@@ -1233,6 +1232,54 @@ namespace SeedStore.Migrations
                     b.ToTable("ReviewStatuses", (string)null);
                 });
 
+            modelBuilder.Entity("SeedStore.Database.Entities.Store.StoreInfo.AboutPageEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AboutPage", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Content = ""
+                        });
+                });
+
+            modelBuilder.Entity("SeedStore.Database.Entities.Store.StoreInfo.ContactsEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Contacts", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Content = ""
+                        });
+                });
+
             modelBuilder.Entity("SeedStore.Database.Entities.Store.StoreInfo.DeliveryVariantEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -1487,14 +1534,10 @@ namespace SeedStore.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SeedStore.Database.Entities.Admin.Account.EmployeeEntity", null)
+                    b.HasOne("SeedStore.Database.Entities.Admin.Account.EmployeeEntity", "TakenByEmployee")
                         .WithMany()
                         .HasForeignKey("TakenByEmployeeId")
                         .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("SeedStore.Database.Entities.Admin.Account.EmployeeEntity", "TakenByEmployee")
-                        .WithMany()
-                        .HasForeignKey("TakenByEmployeeId1");
 
                     b.Navigation("Account");
 

@@ -50,6 +50,8 @@ namespace SeedStore.Database.Context
         // Store — StoreInfo
         public DbSet<DeliveryVariantEntity> DeliveryVariants { get; set; }
         public DbSet<PaymentVariantEntity> PaymentVariants { get; set; }
+        public DbSet<AboutPageEntity> AboutPages { get; set; }
+        public DbSet<ContactsEntity> Contacts { get; set; }
 
         // Admin — Account
         public DbSet<EmployeeEntity> Employees { get; set; }

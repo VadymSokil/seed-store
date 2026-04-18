@@ -52,5 +52,14 @@ namespace SeedStore.Store.Products.Services
         {
             return await _productRepository.GetProductDetailsAsync(idOrSlug);
         }
+
+        public async Task<List<DiscountGroupResponseModel>> GetActiveDiscountGroupsAsync()
+        {
+            if (_cache.TryGetValue(CacheKeys.DiscountGroups, out List<DiscountGroupResponseModel> cached))
+                return cached;
+            var result = await _productRepository.GetActiveDiscountGroupsAsync();
+            _cache.Set(CacheKeys.DiscountGroups, result, TimeSpan.FromHours(1));
+            return result;
+        }
     }
 }

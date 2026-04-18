@@ -54,7 +54,7 @@ namespace SeedStore.Store.Products.Repositories
                     DiscountPrice = _context.Discounts
                         .Where(d => d.ProductId == p.Id &&
                             _context.DiscountGroups.Any(g => g.Id == d.GroupId && g.IsActive && g.StartDate <= now && g.EndDate >= now))
-                        .Select(d => (decimal?)(p.Price - p.Price * d.DiscountPercent / 100))
+                        .Select(d => (decimal?)Math.Floor(p.Price * (1 - d.DiscountPercent / 100)))
                         .FirstOrDefault()
                 })
                 .ToListAsync();
@@ -80,7 +80,7 @@ namespace SeedStore.Store.Products.Repositories
                     DiscountPrice = _context.Discounts
                         .Where(d => d.ProductId == p.Id &&
                             _context.DiscountGroups.Any(g => g.Id == d.GroupId && g.IsActive && g.StartDate <= now && g.EndDate >= now))
-                        .Select(d => (decimal?)(p.Price - p.Price * d.DiscountPercent / 100))
+                        .Select(d => (decimal?)Math.Floor(p.Price * (1 - d.DiscountPercent / 100)))
                         .FirstOrDefault()
                 })
                 .ToListAsync();
@@ -106,7 +106,7 @@ namespace SeedStore.Store.Products.Repositories
                     DiscountPrice = _context.Discounts
                         .Where(d => d.ProductId == p.Id &&
                             _context.DiscountGroups.Any(g => g.Id == d.GroupId && g.IsActive && g.StartDate <= now && g.EndDate >= now))
-                        .Select(d => (decimal?)(p.Price - p.Price * d.DiscountPercent / 100))
+                        .Select(d => (decimal?)Math.Floor(p.Price * (1 - d.DiscountPercent / 100)))
                         .FirstOrDefault()
                 })
                 .ToListAsync();
@@ -234,7 +234,7 @@ namespace SeedStore.Store.Products.Repositories
                     DiscountPrice = _context.Discounts
                         .Where(d => d.ProductId == p.Id &&
                             _context.DiscountGroups.Any(g => g.Id == d.GroupId && g.IsActive && g.StartDate <= now && g.EndDate >= now))
-                        .Select(d => (decimal?)(p.Price - p.Price * d.DiscountPercent / 100))
+                        .Select(d => (decimal?)Math.Floor(p.Price * (1 - d.DiscountPercent / 100)))
                         .FirstOrDefault()
                 })
                 .ToListAsync();
@@ -299,7 +299,7 @@ namespace SeedStore.Store.Products.Repositories
             var discountPrice = await _context.Discounts
                 .Where(d => d.ProductId == product.Id &&
                     _context.DiscountGroups.Any(g => g.Id == d.GroupId && g.IsActive && g.StartDate <= now && g.EndDate >= now))
-                .Select(d => (decimal?)(product.Price - product.Price * d.DiscountPercent / 100))
+                .Select(d => (decimal?)Math.Floor(product.Price * (1 - d.DiscountPercent / 100)))
                 .FirstOrDefaultAsync();
 
             return new ProductDetailsModel
@@ -336,6 +336,35 @@ namespace SeedStore.Store.Products.Repositories
                 : 0;
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<DiscountGroupResponseModel>> GetActiveDiscountGroupsAsync()
+        {
+            var now = DateTime.UtcNow;
+            return await _context.DiscountGroups
+                .Where(g => g.IsActive && g.StartDate <= now && g.EndDate >= now)
+                .OrderBy(g => g.ViewOrder)
+                .Select(g => new DiscountGroupResponseModel
+                {
+                    Id = g.Id,
+                    Name = g.Name,
+                    StartDate = g.StartDate,
+                    EndDate = g.EndDate,
+                    Products = _context.Discounts
+                        .Where(d => d.GroupId == g.Id)
+                        .Select(d => new DiscountResponseModel
+                        {
+                            ProductId = d.ProductId,
+                            Name = _context.Products.Where(p => p.Id == d.ProductId).Select(p => p.Name).FirstOrDefault() ?? string.Empty,
+                            Slug = _context.Products.Where(p => p.Id == d.ProductId).Select(p => p.Slug).FirstOrDefault() ?? string.Empty,
+                            ImageUrl = _context.ProductImages.Where(pi => pi.ProductId == d.ProductId).OrderBy(pi => pi.ViewOrder).Select(pi => pi.Url).FirstOrDefault() ?? string.Empty,
+                            OriginalPrice = _context.Products.Where(p => p.Id == d.ProductId).Select(p => p.Price).FirstOrDefault(),
+                            DiscountPercent = d.DiscountPercent,
+                            DiscountPrice = Math.Floor(_context.Products.Where(p => p.Id == d.ProductId).Select(p => p.Price).FirstOrDefault() * (1 - d.DiscountPercent / 100))
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
         }
     }
 }

@@ -19,5 +19,7 @@ namespace SeedStore.Store.Account.Interfaces
         Task UpdateAccountPasswordAsync(int accountId, string passwordHash);
 
         Task DeleteAccountAsync(int accountId);
+
+        Task<EmailChangeRequestEntity?> GetEmailChangeRequestByAccountIdAsync(int accountId);
     }
 }

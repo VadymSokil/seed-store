@@ -68,7 +68,7 @@ export default function ComparePage() {
         ) : products.length === 0 ? (
           <p className="text-gray-500">Список порівняння порожній</p>
         ) : (
-          <div className="flex gap-4 overflow-x-auto pb-4">
+          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
             {products.map(p => {
               const price = p.hasDiscount && p.discountPrice ? p.discountPrice : p.price;
               return (

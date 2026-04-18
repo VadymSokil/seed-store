@@ -31,6 +31,7 @@ namespace SeedStore.Store.Account.Services
 
             return new AccountInfoResponseModel
             {
+                Id = account.Id,
                 FirstName = account.FirstName,
                 LastName = account.LastName,
                 MiddleName = account.MiddleName,
@@ -97,6 +98,23 @@ namespace SeedStore.Store.Account.Services
             await _accountRepository.UpdateAccountEmailAsync(accountId, model.NewEmail);
             await _accountRepository.DeleteEmailChangeRequestAsync(request);
 
+            return "ok";
+        }
+
+        public async Task<string> ResendEmailChangeCodeAsync(int accountId)
+        {
+            var request = await _accountRepository.GetEmailChangeRequestByAccountIdAsync(accountId);
+            if (request == null)
+                return "not_found";
+            var code = _tokenGenerationService.GenerateVerificationCode();
+            request.Code = code;
+            request.ExpiresAt = DateTime.UtcNow.AddMinutes(15);
+            await _accountRepository.UpsertEmailChangeRequestAsync(request);
+            await _emailService.SendEmailAsync(
+                request.NewEmail,
+                "Зміна електронної пошти",
+                $"<p>Ваш новий код підтвердження зміни пошти: <b>{code}</b></p><p>Код дійсний 15 хвилин.</p>"
+            );
             return "ok";
         }
 

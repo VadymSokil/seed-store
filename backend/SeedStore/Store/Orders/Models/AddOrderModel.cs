@@ -52,6 +52,9 @@ namespace SeedStore.Store.Orders.Models
         [MaxLength(500)]
         public string? Comment { get; set; }
 
+        [MaxLength(500)]
+        public string? CustomerComment { get; set; }
+
         [Required]
         public List<AddOrderItemModel> Items { get; set; } = [];
     }

@@ -3,6 +3,7 @@ using SeedStore.Store.Authorization.Interfaces;
 using SeedStore.Store.Authorization.Models;
 using SeedStore.Support.General.PasswordHash.Interfaces;
 using SeedStore.Support.General.TokenGeneration.Interfaces;
+using SeedStore.Support.Store.Captcha.Cloudflare.Interfaces;
 using SeedStore.Support.Store.Email.Interfaces;
 
 namespace SeedStore.Store.Authorization.Services
@@ -13,17 +14,22 @@ namespace SeedStore.Store.Authorization.Services
         private readonly IEmailService _emailService;
         private readonly IPasswordHashService _passwordHashService;
         private readonly ITokenGenerationService _tokenGenerationService;
+        private readonly ICloudflareService _cloudflareService;
 
-        public AuthorizationService(IAuthorizationRepository authorizationRepository, IEmailService emailService, IPasswordHashService passwordHashService, ITokenGenerationService tokenGenerationService)
+        public AuthorizationService(IAuthorizationRepository authorizationRepository, IEmailService emailService, IPasswordHashService passwordHashService, ITokenGenerationService tokenGenerationService, ICloudflareService cloudflareService)
         {
             _authorizationRepository = authorizationRepository;
             _emailService = emailService;
             _passwordHashService = passwordHashService;
             _tokenGenerationService = tokenGenerationService;
+            _cloudflareService = cloudflareService;
         }
 
         public async Task<string> RegistrationAsync(RegistrationModel model)
         {
+            if (!await _cloudflareService.VerifyTurnstileAsync(model.TurnstileToken))
+                return "invalid_captcha";
+
             if (model.Password != model.ConfirmPassword)
                 return "passwords_mismatch";
 
@@ -60,13 +66,11 @@ namespace SeedStore.Store.Authorization.Services
             return "ok";
         }
 
-        public async Task<string> VerifyEmailAsync(VerifyEmailModel model)
+        public async Task<string> VerifyEmailAsync(VerifyEmailModel model, HttpResponse response)
         {
             var pendingAccount = await _authorizationRepository.GetPendingAccountAsync(model.Email, model.Code);
-
             if (pendingAccount == null)
                 return "invalid_code";
-
             if (pendingAccount.ExpiresAt < DateTime.UtcNow)
                 return "code_expired";
 
@@ -83,7 +87,34 @@ namespace SeedStore.Store.Authorization.Services
             var accountId = await _authorizationRepository.AddAccountAsync(account);
             await _authorizationRepository.DeletePendingAccountAsync(pendingAccount);
 
-            return accountId.ToString();
+            var accessToken = _tokenGenerationService.GenerateAccessToken(accountId);
+            var refreshToken = _tokenGenerationService.GenerateRefreshToken();
+
+            await _authorizationRepository.AddRefreshTokenAsync(new RefreshTokenEntity
+            {
+                AccountId = accountId,
+                Token = refreshToken,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddDays(30),
+                RememberMe = false
+            });
+
+            response.Cookies.Append("access_token", accessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = null
+            });
+            response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddDays(30)
+            });
+
+            return "success";
         }
 
         public async Task<string> ResendVerificationCodeAsync(string email)
@@ -110,6 +141,9 @@ namespace SeedStore.Store.Authorization.Services
 
         public async Task<string> LoginAsync(LoginModel model, HttpResponse response)
         {
+            if (!await _cloudflareService.VerifyTurnstileAsync(model.TurnstileToken))
+                return "invalid_captcha";
+
             var account = await _authorizationRepository.GetAccountByEmailAsync(model.Email);
 
             if (account == null)
@@ -130,25 +164,22 @@ namespace SeedStore.Store.Authorization.Services
                 RememberMe = model.RememberMe
             });
 
-            var refreshTokenExpires = model.RememberMe ? DateTime.UtcNow.AddDays(30) : (DateTime?)null;
-
             response.Cookies.Append("access_token", accessToken, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddMinutes(60)
+                SameSite = SameSiteMode.None,
+                Expires = null
             });
-
             response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = refreshTokenExpires
+                SameSite = SameSiteMode.None,
+                Expires = model.RememberMe ? DateTime.UtcNow.AddDays(30) : null
             });
 
-            return account.Id.ToString();
+            return "succes";
         }
 
         public async Task<string> ForgotPasswordAsync(string email)
@@ -248,8 +279,18 @@ namespace SeedStore.Store.Authorization.Services
             if (token != null)
                 await _authorizationRepository.DeleteRefreshTokenAsync(token);
 
-            response.Cookies.Delete("access_token");
-            response.Cookies.Delete("refresh_token");
+            response.Cookies.Delete("access_token", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None
+            });
+            response.Cookies.Delete("refresh_token", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None
+            });
 
             return "ok";
         }

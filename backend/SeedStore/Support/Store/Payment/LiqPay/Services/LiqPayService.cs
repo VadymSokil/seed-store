@@ -1,22 +1,28 @@
 ﻿using Microsoft.Extensions.Configuration;
-using SeedStore.Support.Store.Payment.Interfaces;
-using SeedStore.Support.Store.Payment.Models;
+using SeedStore.Support.Store.Payment.LiqPay.Interfaces;
+using SeedStore.Support.Store.Payment.LiqPay.Models;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
-namespace SeedStore.Support.Store.Payment.Services
+namespace SeedStore.Support.Store.Payment.LiqPay.Services
 {
-    public class PaymentService : IPaymentService
+    public class LiqPayService : ILiqPayService
     {
         private readonly string _publicKey;
         private readonly string _privateKey;
+        private readonly string _serverUrl;
+        private readonly string _resultUrl;
 
-        public PaymentService(IConfiguration configuration)
+        public LiqPayService(IConfiguration configuration)
         {
             _publicKey = configuration["LiqPay:PublicKey"]!;
             _privateKey = configuration["LiqPay:PrivateKey"]!;
+            _serverUrl = configuration["LiqPay:ServerUrl"]!;
+            _resultUrl = configuration["LiqPay:ResultUrl"]!;
         }
+
+
 
         public (string data, string signature) GetPaymentData(string orderNumber, decimal amount, string description)
         {
@@ -28,13 +34,14 @@ namespace SeedStore.Support.Store.Payment.Services
                 { "amount", amount },
                 { "currency", "UAH" },
                 { "description", description },
-                { "order_id", orderNumber }
+                { "order_id", orderNumber },
+                { "server_url", _serverUrl },
+                { "result_url", _resultUrl + "?orderNumber=" + orderNumber }
             };
 
             var json = JsonSerializer.Serialize(parameters);
             var data = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
             var signature = GenerateSignature(data);
-
             return (data, signature);
         }
 

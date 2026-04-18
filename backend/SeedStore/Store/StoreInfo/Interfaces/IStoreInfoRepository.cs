@@ -6,5 +6,7 @@ namespace SeedStore.Store.StoreInfo.Interfaces
     {
         Task<List<DeliveryVariantEntity>> GetDeliveryVariantsAsync();
         Task<List<PaymentVariantEntity>> GetPaymentVariantsAsync();
+        Task<AboutPageEntity?> GetAboutPageAsync();
+        Task<ContactsEntity?> GetContactsAsync();
     }
 }

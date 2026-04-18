@@ -145,5 +145,51 @@ namespace SeedStore.Admin.StoreInfo.Controllers
             await _adminStoreInfoService.ReorderPaymentVariantsAsync(items, initiatorId);
             return Ok();
         }
+
+        [HttpGet("about")]
+        [Authorize(Policy = "Permission:store.manage")]
+        public async Task<IActionResult> GetAboutPage()
+        {
+            var result = await _adminStoreInfoService.GetAboutPageAsync();
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+
+        [HttpPut("about")]
+        [Authorize(Policy = "Permission:store.manage")]
+        public async Task<IActionResult> UpdateAboutPage([FromBody] UpdatePageContentModel model)
+        {
+            var initiatorId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _adminStoreInfoService.UpdateAboutPageAsync(model, initiatorId);
+            return result switch
+            {
+                "ok" => Ok(),
+                "not_found" => NotFound(),
+                _ => StatusCode(500)
+            };
+        }
+
+        [HttpGet("contacts")]
+        [Authorize(Policy = "Permission:store.manage")]
+        public async Task<IActionResult> GetContacts()
+        {
+            var result = await _adminStoreInfoService.GetContactsAsync();
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+
+        [HttpPut("contacts")]
+        [Authorize(Policy = "Permission:store.manage")]
+        public async Task<IActionResult> UpdateContacts([FromBody] UpdatePageContentModel model)
+        {
+            var initiatorId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _adminStoreInfoService.UpdateContactsAsync(model, initiatorId);
+            return result switch
+            {
+                "ok" => Ok(),
+                "not_found" => NotFound(),
+                _ => StatusCode(500)
+            };
+        }
     }
 }

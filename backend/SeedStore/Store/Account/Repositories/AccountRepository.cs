@@ -103,5 +103,11 @@ namespace SeedStore.Store.Account.Repositories
                 .Where(a => a.Id == accountId)
                 .ExecuteDeleteAsync();
         }
+
+        public async Task<EmailChangeRequestEntity?> GetEmailChangeRequestByAccountIdAsync(int accountId)
+        {
+            return await _context.EmailChangeRequests
+                .FirstOrDefaultAsync(e => e.AccountId == accountId);
+        }
     }
 }

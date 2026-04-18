@@ -1,13 +1,15 @@
 import { useCartStore } from '../../store/useCartStore';
 import { Plus, Minus, X } from 'lucide-react';
 import { useModalScrollLock } from '../../hooks/useModalScrollLock';
+import { useNavigate } from 'react-router-dom';
 
 interface CartModalProps {
   onClose: () => void;
 }
 
 const CartModal = ({ onClose }: CartModalProps) => {
-  const { items, incrementQuantity, decrementQuantity, removeItem } = useCartStore();
+  const { items, incrementQuantity, decrementQuantity, removeItem, clearItems } = useCartStore();
+  const navigate = useNavigate();
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const totalCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -55,7 +57,16 @@ const CartModal = ({ onClose }: CartModalProps) => {
               <p className="text-sm text-gray-600">
                 Всього <span className="font-semibold">{totalCount} товарів</span> на суму: <span className="font-bold text-green-700">{total} ₴</span>
               </p>
-              <button className="w-full bg-green-600 text-white py-2 rounded text-sm hover:bg-green-700 transition-colors font-medium">
+              <button
+                onClick={clearItems}
+                className="w-full border border-gray-300 text-gray-500 py-2 rounded text-sm hover:border-red-400 hover:text-red-400 transition-colors"
+              >
+                Очистити кошик
+              </button>
+              <button
+                onClick={() => { onClose(); navigate('/checkout'); }}
+                className="w-full bg-green-600 text-white py-2 rounded text-sm hover:bg-green-700 transition-colors font-medium"
+              >
                 Оформити замовлення
               </button>
             </div>

@@ -207,5 +207,45 @@ namespace SeedStore.Admin.StoreInfo.Services
             var initiator = await _repository.GetEmployeeByIdAsync(initiatorId);
             await _employeesActivityService.LogAsync(initiatorId, $"{initiator!.Role!.Name} {initiator.Name}({initiatorId}) змінив(ла) порядок варіантів оплати.", before, after);
         }
+
+        public async Task<string?> GetAboutPageAsync()
+        {
+            var entity = await _repository.GetAboutPageAsync();
+            return entity?.Content;
+        }
+
+        public async Task<string> UpdateAboutPageAsync(UpdatePageContentModel model, int initiatorId)
+        {
+            var entity = await _repository.GetAboutPageAsync();
+            if (entity == null) return "not_found";
+
+            entity.Content = model.Content;
+            await _repository.UpdateAboutPageAsync(entity);
+
+            var initiator = await _repository.GetEmployeeByIdAsync(initiatorId);
+            await _employeesActivityService.LogAsync(initiatorId, $"{initiator!.Role!.Name} {initiator.Name}({initiatorId}) оновив(ла) сторінку «Про нас».");
+            _cache.Remove(CacheKeys.AboutPage);
+            return "ok";
+        }
+
+        public async Task<string?> GetContactsAsync()
+        {
+            var entity = await _repository.GetContactsAsync();
+            return entity?.Content;
+        }
+
+        public async Task<string> UpdateContactsAsync(UpdatePageContentModel model, int initiatorId)
+        {
+            var entity = await _repository.GetContactsAsync();
+            if (entity == null) return "not_found";
+
+            entity.Content = model.Content;
+            await _repository.UpdateContactsAsync(entity);
+
+            var initiator = await _repository.GetEmployeeByIdAsync(initiatorId);
+            await _employeesActivityService.LogAsync(initiatorId, $"{initiator!.Role!.Name} {initiator.Name}({initiatorId}) оновив(ла) сторінку «Контакти».");
+            _cache.Remove(CacheKeys.Contacts);
+            return "ok";
+        }
     }
 }

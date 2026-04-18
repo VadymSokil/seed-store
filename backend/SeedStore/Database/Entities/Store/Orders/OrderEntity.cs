@@ -11,6 +11,7 @@ namespace SeedStore.Database.Entities.Store.Orders
         public DateTime OrderDate { get; set; }
         public string StatusCode { get; set; } = string.Empty;
         public string? Comment { get; set; }
+        public string? CustomerComment { get; set; }
         public string DeliveryCode { get; set; } = string.Empty;
         public string PaymentCode { get; set; } = string.Empty;
         public string? PostalOfficeNumber { get; set; }

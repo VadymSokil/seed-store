@@ -1,4 +1,4 @@
-﻿namespace SeedStore.Support.Store.Payment.Models
+﻿namespace SeedStore.Support.Store.Payment.LiqPay.Models
 {
     public class LiqPayCallbackDataModel
     {

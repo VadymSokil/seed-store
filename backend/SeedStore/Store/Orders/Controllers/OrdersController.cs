@@ -20,14 +20,13 @@ namespace SeedStore.Store.Orders.Controllers
 
         [Authorize(Policy = "StorePolicy")]
         [HttpGet]
-        public async Task<IActionResult> GetAccountOrders()
+        public async Task<IActionResult> GetAccountOrders([FromQuery] GetAccountOrdersModel model)
         {
             var accountId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            var (status, orders) = await _ordersService.GetAccountOrdersAsync(accountId);
-
+            var (status, data) = await _ordersService.GetAccountOrdersAsync(accountId, model.Page, model.PageSize);
             return status switch
             {
-                "ok" => Ok(orders),
+                "ok" => Ok(data),
                 _ => StatusCode(500)
             };
         }
@@ -62,6 +61,40 @@ namespace SeedStore.Store.Orders.Controllers
                 "not_found" => Ok(),
                 _ => Ok()
             };
+        }
+
+        [Authorize(Policy = "StorePolicy")]
+        [HttpPost("{orderNumber}/pay")]
+        public async Task<IActionResult> GetPaymentData(string orderNumber)
+        {
+            var accountId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var (status, data) = await _ordersService.GetPaymentDataAsync(orderNumber, accountId);
+            return status switch
+            {
+                "ok" => Ok(data),
+                "not_found" => NotFound(),
+                "forbidden" => Forbid(),
+                "already_paid" => BadRequest(new { message = "Замовлення вже оплачено" }),
+                _ => StatusCode(500)
+            };
+        }
+
+        [HttpGet("nova-poshta/settlements")]
+        public async Task<IActionResult> SearchSettlements([FromQuery] string value)
+        {
+            if (string.IsNullOrWhiteSpace(value) || value.Length < 2)
+                return Ok(new List<object>());
+            var cities = await _ordersService.SearchSettlementsAsync(value);
+            return Ok(cities);
+        }
+
+        [HttpGet("nova-poshta/warehouses")]
+        public async Task<IActionResult> SearchWarehouses([FromQuery] string settlementId, [FromQuery] string? value)
+        {
+            if (string.IsNullOrWhiteSpace(settlementId))
+                return BadRequest();
+            var warehouses = await _ordersService.SearchWarehousesAsync(settlementId, value);
+            return Ok(warehouses);
         }
     }
 }

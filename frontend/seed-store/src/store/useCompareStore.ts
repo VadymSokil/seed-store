@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface CompareItem {
   id: number;
@@ -15,18 +16,23 @@ interface CompareStore {
   clearItems: () => void;
 }
 
-export const useCompareStore = create<CompareStore>((set) => ({
-  items: [],
-  count: 0,
-  addItem: (product) => set((state) => {
-    const exists = state.items.find(i => i.id === product.id);
-    if (exists) return state;
-    if (state.items.length >= 4) return state;
-    return { items: [...state.items, product], count: state.count + 1 };
-  }),
-  removeItem: (id) => set((state) => ({
-    items: state.items.filter(i => i.id !== id),
-    count: state.count - 1
-  })),
-  clearItems: () => set({ items: [], count: 0 }),
-}));
+export const useCompareStore = create<CompareStore>()(
+  persist(
+    (set) => ({
+      items: [],
+      count: 0,
+      addItem: (product) => set((state) => {
+        const exists = state.items.find(i => i.id === product.id);
+        if (exists) return state;
+        if (state.items.length >= 4) return state;
+        return { items: [...state.items, product], count: state.count + 1 };
+      }),
+      removeItem: (id) => set((state) => ({
+        items: state.items.filter(i => i.id !== id),
+        count: state.count - 1
+      })),
+      clearItems: () => set({ items: [], count: 0 }),
+    }),
+    { name: 'compare' }
+  )
+);

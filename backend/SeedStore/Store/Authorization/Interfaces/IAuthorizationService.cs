@@ -5,7 +5,7 @@ namespace SeedStore.Store.Authorization.Interfaces
     public interface IAuthorizationService
     {
         Task<string> RegistrationAsync(RegistrationModel registration);
-        Task<string> VerifyEmailAsync(VerifyEmailModel model);
+        Task<string> VerifyEmailAsync(VerifyEmailModel model, HttpResponse response);
         Task<string> ResendVerificationCodeAsync(string email);
         Task<string> LoginAsync(LoginModel model, HttpResponse response);
         Task<string> ForgotPasswordAsync(string email);

@@ -112,3 +112,24 @@ export interface ProductDetails {
 
 export const getProduct = (slugOrId: string): Promise<ProductDetails> =>
   api.get<ProductDetails>(`/api/products/${slugOrId}`).then(res => res.data);
+
+export interface DiscountProduct {
+  productId: number;
+  name: string;
+  slug: string;
+  imageUrl: string;
+  originalPrice: number;
+  discountPrice: number;
+  discountPercent: number;
+}
+
+export interface DiscountGroup {
+  id: number;
+  name: string;
+  startDate: string;
+  endDate: string;
+  products: DiscountProduct[];
+}
+
+export const getActiveDiscountGroups = (): Promise<DiscountGroup[]> =>
+  api.get<DiscountGroup[]>('/api/products/discounts').then(r => r.data);

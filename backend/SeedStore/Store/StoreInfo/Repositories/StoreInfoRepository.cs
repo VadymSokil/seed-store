@@ -23,5 +23,15 @@ namespace SeedStore.Store.StoreInfo.Repositories
         {
             return await _context.PaymentVariants.Where(c => c.IsActive).OrderBy(c => c.ViewOrder).ToListAsync();
         }
+
+        public async Task<AboutPageEntity?> GetAboutPageAsync()
+        {
+            return await _context.AboutPages.FirstOrDefaultAsync();
+        }
+
+        public async Task<ContactsEntity?> GetContactsAsync()
+        {
+            return await _context.Contacts.FirstOrDefaultAsync();
+        }
     }
 }

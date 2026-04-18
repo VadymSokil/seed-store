@@ -10,5 +10,6 @@ namespace SeedStore.Store.Products.Interfaces
         Task<ProductListResponseModel> GetProductsListAsync(ProductListRequestModel request);
         Task<ProductDetailsModel?> GetProductDetailsAsync(string idOrSlug);
         Task RecalculateProductRatingAsync(int productId);
+        Task<List<DiscountGroupResponseModel>> GetActiveDiscountGroupsAsync();
     }
 }

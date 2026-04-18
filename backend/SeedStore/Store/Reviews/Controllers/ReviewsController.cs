@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Isopoh.Cryptography.Argon2;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using SeedStore.Store.Orders.Models;
 using SeedStore.Store.Reviews.Interfaces;
 using SeedStore.Store.Reviews.Models;
 using System.Security.Claims;
@@ -19,18 +22,23 @@ namespace SeedStore.Store.Reviews.Controllers
         }
 
         [HttpGet("product/{productId}")]
-        public async Task<IActionResult> GetProductReviews(int productId)
+        public async Task<IActionResult> GetProductReviews([FromRoute] int productId, [FromQuery] GetProductReviewsModel model)
         {
-            var result = await _reviewsService.GetProductReviewsAsync(productId);
+            model.ProductId = productId;
+            if (!ModelState.IsValid) return BadRequest();
+            int? accountId = User.FindFirst(ClaimTypes.NameIdentifier) is { } claim
+                ? int.Parse(claim.Value)
+                : null;
+            var result = await _reviewsService.GetProductReviewsAsync(model.ProductId, model.Page, model.PageSize, accountId);
             return Ok(result);
         }
 
         [Authorize(Policy = "StorePolicy")]
         [HttpGet("account")]
-        public async Task<IActionResult> GetAccountReviews()
+        public async Task<IActionResult> GetAccountReviews([FromQuery] GetAccountReviewsModel model)
         {
             var accountId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            var result = await _reviewsService.GetAccountReviewsAsync(accountId);
+            var result = await _reviewsService.GetAccountReviewsAsync(accountId, model.Page, model.PageSize);
             return Ok(result);
         }
 

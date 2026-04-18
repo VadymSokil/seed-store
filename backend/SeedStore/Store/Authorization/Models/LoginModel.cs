@@ -5,6 +5,8 @@ namespace SeedStore.Store.Authorization.Models
     public class LoginModel
     {
         [Required]
+        public string TurnstileToken { get; set; } = string.Empty;
+        [Required]
         [MaxLength(254)]
         [EmailAddress]
         public string Email { get; set; } = string.Empty;

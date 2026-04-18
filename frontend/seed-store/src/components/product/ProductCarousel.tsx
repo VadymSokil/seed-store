@@ -1,3 +1,4 @@
+import { useEffect, useState, useCallback } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ProductCard from './ProductCard';
@@ -20,28 +21,53 @@ interface ProductCarouselProps {
 }
 
 const ProductCarousel = ({ title, products }: ProductCarouselProps) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ 
-    loop: false, 
-    align: 'start', 
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: false,
+    align: 'start',
     containScroll: 'keepSnaps',
     dragFree: false
   });
 
-  const scrollPrev = () => emblaApi?.scrollPrev();
-  const scrollNext = () => emblaApi?.scrollNext();
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
+
+  const updateButtons = useCallback(() => {
+    if (!emblaApi) return;
+    setCanPrev(emblaApi.canScrollPrev());
+    setCanNext(emblaApi.canScrollNext());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.on('select', updateButtons);
+    emblaApi.on('reInit', updateButtons);
+    updateButtons();
+  }, [emblaApi, updateButtons]);
+
+  const showButtons = canPrev || canNext;
 
   return (
     <div className="py-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-gray-800">{title}</h2>
-        <div className="flex gap-2">
-          <button onClick={scrollPrev} className="p-1.5 rounded-full border border-gray-300 text-gray-400 hover:border-green-700 hover:text-green-700 active:border-green-700 active:text-green-700 transition-colors">
-            <ChevronLeft size={20} strokeWidth={2.5} />
-          </button>
-          <button onClick={scrollNext} className="p-1.5 rounded-full border border-gray-300 text-gray-400 hover:border-green-700 hover:text-green-700 active:border-green-700 active:text-green-700 transition-colors">
-            <ChevronRight size={20} strokeWidth={2.5} />
-          </button>
-        </div>
+        {showButtons && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => emblaApi?.scrollPrev()}
+              disabled={!canPrev}
+              className="p-1.5 rounded-full border border-gray-300 text-gray-400 hover:border-green-700 hover:text-green-700 transition-colors disabled:opacity-30 disabled:cursor-default"
+            >
+              <ChevronLeft size={20} strokeWidth={2.5} />
+            </button>
+            <button
+              onClick={() => emblaApi?.scrollNext()}
+              disabled={!canNext}
+              className="p-1.5 rounded-full border border-gray-300 text-gray-400 hover:border-green-700 hover:text-green-700 transition-colors disabled:opacity-30 disabled:cursor-default"
+            >
+              <ChevronRight size={20} strokeWidth={2.5} />
+            </button>
+          </div>
+        )}
       </div>
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex gap-4">
@@ -54,6 +80,6 @@ const ProductCarousel = ({ title, products }: ProductCarouselProps) => {
       </div>
     </div>
   );
-}
+};
 
 export default ProductCarousel;

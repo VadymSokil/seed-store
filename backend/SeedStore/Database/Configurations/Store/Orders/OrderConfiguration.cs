@@ -15,6 +15,7 @@ namespace SeedStore.Database.Configurations.Store.Orders
             builder.Property(o => o.OrderDate).IsRequired();
             builder.Property(o => o.StatusCode).IsRequired().HasMaxLength(50).HasDefaultValue("pending");
             builder.Property(o => o.Comment).HasMaxLength(500);
+            builder.Property(o => o.CustomerComment).HasMaxLength(500);
             builder.Property(o => o.DeliveryCode).IsRequired().HasMaxLength(50);
             builder.Property(o => o.PaymentCode).IsRequired().HasMaxLength(50);
             builder.Property(o => o.PostalOfficeNumber).HasMaxLength(100);
@@ -37,7 +38,7 @@ namespace SeedStore.Database.Configurations.Store.Orders
             builder.HasOne(o => o.Status).WithMany(s => s.Orders).HasForeignKey(o => o.StatusCode).HasPrincipalKey(s => s.Code).OnDelete(DeleteBehavior.Restrict);
             builder.HasOne(o => o.Delivery).WithMany().HasForeignKey(o => o.DeliveryCode).HasPrincipalKey(d => d.Code).OnDelete(DeleteBehavior.Restrict);
             builder.HasOne(o => o.Payment).WithMany().HasForeignKey(o => o.PaymentCode).HasPrincipalKey(p => p.Code).OnDelete(DeleteBehavior.Restrict);
-            builder.HasOne<EmployeeEntity>().WithMany().HasForeignKey(r => r.TakenByEmployeeId).IsRequired(false).OnDelete(DeleteBehavior.SetNull);
+            builder.HasOne(o => o.TakenByEmployee).WithMany().HasForeignKey(o => o.TakenByEmployeeId).IsRequired(false).OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

@@ -26,5 +26,10 @@ namespace SeedStore.Admin.StoreInfo.Interfaces
 
         Task<List<ReorderItemModel>> GetDeliveryVariantsOrderAsync();
         Task<List<ReorderItemModel>> GetPaymentVariantsOrderAsync();
+
+        Task<AboutPageEntity?> GetAboutPageAsync();
+        Task UpdateAboutPageAsync(AboutPageEntity entity);
+        Task<ContactsEntity?> GetContactsAsync();
+        Task UpdateContactsAsync(ContactsEntity entity);
     }
 }

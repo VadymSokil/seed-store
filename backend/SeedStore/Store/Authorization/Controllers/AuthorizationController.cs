@@ -26,6 +26,7 @@ namespace SeedStore.Store.Authorization.Controllers
                 "email_taken" => Conflict("email_taken"),
                 "email_pending" => Conflict("email_pending"),
                 "passwords_mismatch" => BadRequest("passwords_mismatch"),
+                "invalid_captcha" => BadRequest("invalid_captcha"),
                 _ => StatusCode(500)
             };
         }
@@ -33,13 +34,13 @@ namespace SeedStore.Store.Authorization.Controllers
         [HttpPost("verify-email")]
         public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailModel model)
         {
-            var result = await _authorizationService.VerifyEmailAsync(model);
-
+            var result = await _authorizationService.VerifyEmailAsync(model, Response);
             return result switch
             {
                 "invalid_code" => BadRequest("invalid_code"),
                 "code_expired" => BadRequest("code_expired"),
-                _ => Ok(int.Parse(result))
+                "success" => Ok(),
+                _ => StatusCode(500)
             };
         }
 
@@ -60,11 +61,11 @@ namespace SeedStore.Store.Authorization.Controllers
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
             var result = await _authorizationService.LoginAsync(model, Response);
-
             return result switch
             {
                 "invalid_credentials" => Unauthorized("invalid_credentials"),
-                _ => Ok(int.Parse(result))
+                "invalid_captcha" => BadRequest("invalid_captcha"),
+                _ => Ok()
             };
         }
 
